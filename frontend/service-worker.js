@@ -1,18 +1,19 @@
-const CACHE_NAME = 'music-shell-v1';
+const CACHE_NAME = 'music-shell-v2';
 const AUDIO_CACHE = 'music-audio-v1';
+const BASE = '/music';
 
 const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/app.css',
-  '/js/app.js',
-  '/js/player.js',
-  '/js/queue.js',
-  '/js/api.js',
-  '/js/i18n/en.js',
-  '/js/views/home.js',
-  '/js/views/search.js',
-  '/manifest.json',
+  `${BASE}/`,
+  `${BASE}/index.html`,
+  `${BASE}/css/app.css`,
+  `${BASE}/js/app.js`,
+  `${BASE}/js/player.js`,
+  `${BASE}/js/queue.js`,
+  `${BASE}/js/api.js`,
+  `${BASE}/js/i18n/en.js`,
+  `${BASE}/js/views/home.js`,
+  `${BASE}/js/views/search.js`,
+  `${BASE}/manifest.json`,
 ];
 
 // ── Install: cache the UI shell ───────────────────────────
