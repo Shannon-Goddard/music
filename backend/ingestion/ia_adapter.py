@@ -62,6 +62,11 @@ class IAAdapter(BaseAdapter):
             return None
 
         stream_url = f"https://archive.org/download/{identifier}/{mp3_file['name']}"
+
+        # Pre-flight check — skip tracks that require login to stream
+        if not self._is_publicly_streamable(stream_url):
+            logger.info("IA: skipping non-public stream for %s", identifier)
+            return None
         source_url = f"https://archive.org/details/{identifier}"
         track_id = f"TRK-IA-{identifier}"
         now = datetime.now(timezone.utc).isoformat()
@@ -120,6 +125,14 @@ class IAAdapter(BaseAdapter):
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    def _is_publicly_streamable(self, url: str) -> bool:
+        """Return True only if the stream URL is publicly accessible without auth."""
+        try:
+            response = requests.head(url, timeout=10, allow_redirects=True)
+            return response.status_code in {200, 206, 301, 302}
+        except requests.RequestException:
+            return False
 
     def _fetch_metadata(self, identifier: str) -> dict | None:
         try:

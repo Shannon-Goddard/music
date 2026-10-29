@@ -16,7 +16,7 @@ REGION = "us-east-1"
 RETRY_DELAYS = [5, 30, 120]
 
 # HTTP codes that confirm a dead link — no retry
-DEAD_CODES = {404, 410, 403}
+DEAD_CODES = {401, 403, 404, 410}
 
 # HTTP codes that confirm the link is alive
 ALIVE_CODES = {200, 301, 302, 206}
