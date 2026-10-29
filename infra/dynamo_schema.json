@@ -1,0 +1,71 @@
+{
+  "TableName": "music-tracks",
+  "BillingMode": "PAY_PER_REQUEST",
+  "AttributeDefinitions": [
+    { "AttributeName": "track_id",                  "AttributeType": "S" },
+    { "AttributeName": "artist_id",                 "AttributeType": "S" },
+    { "AttributeName": "album_id",                  "AttributeType": "S" },
+    { "AttributeName": "album_title",               "AttributeType": "S" },
+    { "AttributeName": "track_number",              "AttributeType": "N" },
+    { "AttributeName": "genre",                     "AttributeType": "S" },
+    { "AttributeName": "mood",                      "AttributeType": "S" },
+    { "AttributeName": "bpm",                       "AttributeType": "N" },
+    { "AttributeName": "health_status",             "AttributeType": "S" },
+    { "AttributeName": "last_checked_at",           "AttributeType": "S" },
+    { "AttributeName": "added_at",                  "AttributeType": "S" },
+    { "AttributeName": "dataset_version",           "AttributeType": "S" }
+  ],
+  "KeySchema": [
+    { "AttributeName": "track_id", "KeyType": "HASH" }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "ArtistIndex",
+      "KeySchema": [
+        { "AttributeName": "artist_id",   "KeyType": "HASH" },
+        { "AttributeName": "album_title", "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    },
+    {
+      "IndexName": "AlbumIndex",
+      "KeySchema": [
+        { "AttributeName": "album_id",      "KeyType": "HASH" },
+        { "AttributeName": "track_number",  "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    },
+    {
+      "IndexName": "GenreIndex",
+      "KeySchema": [
+        { "AttributeName": "genre",    "KeyType": "HASH" },
+        { "AttributeName": "added_at", "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    },
+    {
+      "IndexName": "HealthIndex",
+      "KeySchema": [
+        { "AttributeName": "health_status",   "KeyType": "HASH" },
+        { "AttributeName": "last_checked_at", "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    },
+    {
+      "IndexName": "MoodIndex",
+      "KeySchema": [
+        { "AttributeName": "mood", "KeyType": "HASH" },
+        { "AttributeName": "bpm",  "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    },
+    {
+      "IndexName": "DatasetIndex",
+      "KeySchema": [
+        { "AttributeName": "dataset_version", "KeyType": "HASH" },
+        { "AttributeName": "added_at",        "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    }
+  ]
+}
