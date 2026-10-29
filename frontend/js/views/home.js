@@ -1,4 +1,4 @@
-import { searchByGenre } from '../api.js';
+import { searchByGenre, searchByType } from '../api.js';
 import { playQueue } from '../player.js';
 import { loadSession } from '../queue.js';
 import en from '../i18n/en.js';
@@ -12,7 +12,15 @@ const MOODS = [
   { label: '🎸 Intense',   value: 'intense' },
 ];
 
-export async function render(app) {
+const CONTENT_TYPES = [
+  { label: '🎵 Music',      value: 'music' },
+  { label: '🎙 Podcasts',   value: 'podcast' },
+  { label: '🎤 Interviews', value: 'interview' },
+  { label: '📚 Lectures',   value: 'lecture' },
+  { label: '📖 Audiobooks', value: 'audiobook' },
+  { label: '❓ Other',      value: 'other' },
+];
+(app) {
   const session = loadSession();
   const recentRaw = _loadRecent();
 
@@ -26,6 +34,13 @@ export async function render(app) {
           ${recentRaw.map((t, i) => _miniCard(t, i, 'recent')).join('')}
         </div>
       </section>` : ''}
+
+    <section class="mb-8">
+      <h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">Browse by Type</h2>
+      <div class="scroll-row">
+        ${CONTENT_TYPES.map(t => _typeCard(t)).join('')}
+      </div>
+    </section>
 
     <section class="mb-8">
       <h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">${en.home_genre}</h2>
@@ -47,6 +62,11 @@ export async function render(app) {
     </section>
   `;
 
+  // Content type card click
+  app.querySelectorAll('[data-type]').forEach(el => {
+    el.addEventListener('click', () => _loadByType(el.dataset.type, el.dataset.label));
+  });
+
   // Genre card click
   app.querySelectorAll('[data-genre]').forEach(el => {
     el.addEventListener('click', () => _loadGenre(el.dataset.genre));
@@ -65,6 +85,32 @@ export async function render(app) {
     const tracks = JSON.parse(localStorage.getItem('music_queue') || '{}').queue || [];
     if (tracks.length) playQueue(tracks, 0);
   });
+}
+
+async function _loadByType(type, label) {
+  const section = document.getElementById('genre-results');
+  const title = document.getElementById('genre-results-title');
+  const list = document.getElementById('genre-results-list');
+
+  section.classList.remove('hidden');
+  title.textContent = label || type;
+  list.innerHTML = _skeletons(5);
+
+  try {
+    const data = await searchByType(type, 20);
+    const results = data.results || [];
+    if (!results.length) {
+      list.innerHTML = `<p class="text-white/50">No ${type} content found yet</p>`;
+      return;
+    }
+    list.innerHTML = results.map((t, i) => _trackRow(t, i)).join('');
+    list.addEventListener('click', e => {
+      const row = e.target.closest('[data-index]');
+      if (row) playQueue(results, parseInt(row.dataset.index));
+    });
+  } catch {
+    list.innerHTML = `<p class="text-white/50">${en.search_error}</p>`;
+  }
 }
 
 async function _loadGenre(genre) {
@@ -99,6 +145,17 @@ function _resumeBar(session) {
       <p class="text-sm">${en.home_continue}</p>
       <button id="btn-resume" class="text-sm text-accent font-medium hover:underline">Resume ▶</button>
     </div>
+  `;
+}
+
+function _typeCard({ label, value }) {
+  const colors = { music: 'bg-purple-900', podcast: 'bg-blue-900', interview: 'bg-green-900',
+                   lecture: 'bg-yellow-900', audiobook: 'bg-orange-900', other: 'bg-zinc-800' };
+  return `
+    <button data-type="${value}" data-label="${label}"
+      class="card flex-shrink-0 w-32 h-20 ${colors[value] || 'bg-zinc-800'} rounded-lg flex items-end p-3 font-semibold text-sm hover:opacity-90 transition">
+      ${label}
+    </button>
   `;
 }
 
@@ -137,6 +194,7 @@ function _miniCard(track, index, type) {
 }
 
 function _trackRow(track, index) {
+  const badge = _typeBadge(track.content_type);
   return `
     <div data-index="${index}"
          class="card flex items-center gap-3 p-3 rounded-lg bg-card cursor-pointer hover:bg-white/10 transition">
@@ -145,8 +203,16 @@ function _trackRow(track, index) {
         <p class="text-sm font-medium truncate">${_esc(track.title)}</p>
         <p class="text-xs text-white/50 truncate">${_esc(track.artist_name)}</p>
       </div>
+      ${badge}
     </div>
   `;
+}
+
+function _typeBadge(type) {
+  const map = { music: ['bg-purple-900/60','♪'], podcast: ['bg-blue-900/60','🎙'], interview: ['bg-green-900/60','🎤'],
+                lecture: ['bg-yellow-900/60','📚'], audiobook: ['bg-orange-900/60','📖'], other: ['bg-zinc-700/60','?'] };
+  const [cls, icon] = map[type] || map.other;
+  return `<span class="text-xs px-2 py-0.5 rounded-full ${cls} text-white/70 flex-shrink-0">${icon} ${type || 'other'}</span>`;
 }
 
 function _loadRecent() {

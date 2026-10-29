@@ -15,3 +15,8 @@ export function searchTracks(query, limit = 20) {
 export function searchByGenre(genre, limit = 20) {
   return request(`/tracks/search?genre=${encodeURIComponent(genre)}&limit=${limit}`);
 }
+
+/** GET /tracks/search?type={type}&limit={n} */
+export function searchByType(type, limit = 20) {
+  return request(`/tracks/search?type=${encodeURIComponent(type)}&limit=${limit}`);
+}

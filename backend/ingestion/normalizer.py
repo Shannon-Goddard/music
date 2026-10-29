@@ -13,6 +13,7 @@ REQUIRED_FIELDS = [
 
 ALLOWED_PLATFORMS = {"internet_archive", "jamendo", "fma"}
 ALLOWED_HEALTH_STATUSES = {"active", "dead_link", "pending_recheck"}
+ALLOWED_CONTENT_TYPES = {"music", "podcast", "interview", "lecture", "audiobook", "spoken_word", "other"}
 
 
 def normalize(item: dict) -> dict | None:
@@ -41,6 +42,10 @@ def normalize(item: dict) -> dict | None:
     if not stream_url.startswith(("http://", "https://")):
         logger.warning("normalize: invalid stream_url '%s'", stream_url)
         return None
+
+    # Content type — default to 'other' if missing or unrecognized
+    ct = item.get("content_type", "other")
+    item["content_type"] = ct if ct in ALLOWED_CONTENT_TYPES else "other"
 
     # Coerce numeric types to Decimal for DynamoDB compatibility
     item = _coerce_decimals(item)

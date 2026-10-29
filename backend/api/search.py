@@ -33,6 +33,21 @@ def _response(status: int, body: dict) -> dict:
     }
 
 
+def _search_by_content_type(content_type: str, limit: int) -> list[dict]:
+    try:
+        response = _get_table().query(
+            IndexName="ContentTypeIndex",
+            KeyConditionExpression=Key("content_type").eq(content_type),
+            FilterExpression=Attr("health_status").eq("active"),
+            Limit=limit,
+            ScanIndexForward=False,
+        )
+        return response.get("Items", [])
+    except ClientError as e:
+        logger.error("search_by_content_type error: %s", e.response["Error"]["Message"])
+        return []
+
+
 def _search_by_genre(genre: str, limit: int) -> list[dict]:
     # Try exact GSI match first
     try:
@@ -95,6 +110,7 @@ def _search_by_text(query: str, limit: int) -> list[dict]:
 def _format_track(item: dict) -> dict:
     """Return only the fields the frontend needs."""
     return {
+        "content_type": item.get("content_type", "other"),
         "track_id": item.get("track_id"),
         "title": item.get("title"),
         "artist_id": item.get("artist_id"),
@@ -117,16 +133,19 @@ def handler(event, context):
     params = event.get("queryStringParameters") or {}
     query = (params.get("q") or "").strip()
     genre = (params.get("genre") or "").strip()
+    content_type = (params.get("type") or "").strip()
 
     try:
         limit = min(int(params.get("limit", 20)), 100)
     except (ValueError, TypeError):
         limit = 20
 
-    if not query and not genre:
-        return _response(400, {"error": "BAD_REQUEST", "message": "Provide q= or genre= parameter"})
+    if not query and not genre and not content_type:
+        return _response(400, {"error": "BAD_REQUEST", "message": "Provide q=, genre=, or type= parameter"})
 
-    if genre:
+    if content_type:
+        items = _search_by_content_type(content_type, limit)
+    elif genre:
         items = _search_by_genre(genre, limit)
     else:
         items = _search_by_text(query, limit)

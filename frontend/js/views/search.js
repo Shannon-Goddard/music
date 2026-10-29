@@ -44,6 +44,8 @@ function _trackRow(track, index) {
   const art = track.cover_art_url
     ? `<img src="${_esc(track.cover_art_url)}" class="w-10 h-10 rounded object-cover bg-white/10" alt="" />`
     : `<div class="w-10 h-10 rounded bg-white/10 flex items-center justify-center text-white/30 text-lg">♪</div>`;
+  const typeMap = { music: '♪', podcast: '🎙', interview: '🎤', lecture: '📚', audiobook: '📖' };
+  const typeIcon = typeMap[track.content_type] || '?';
 
   return `
     <div data-index="${index}"
@@ -53,7 +55,8 @@ function _trackRow(track, index) {
         <p class="text-sm font-medium truncate">${_esc(track.title)}</p>
         <p class="text-xs text-white/50 truncate">${_esc(track.artist_name)} · ${_esc(track.album_title)}</p>
       </div>
-      <div class="flex items-center gap-3 text-xs text-white/40">
+      <div class="flex items-center gap-2 text-xs text-white/40 flex-shrink-0">
+        <span title="${_esc(track.content_type || 'other')}">${typeIcon}</span>
         <span>${_esc(track.genre || '')}</span>
         <span>${duration}</span>
       </div>
