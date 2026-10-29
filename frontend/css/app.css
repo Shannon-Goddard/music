@@ -1,0 +1,60 @@
+/* Custom styles that Tailwind doesn't cover */
+
+/* Accent color for range inputs */
+input[type="range"] {
+  accent-color: #1db954;
+}
+
+/* Smooth view transitions */
+@supports (view-transition-name: none) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.2s;
+  }
+}
+
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(90deg, #242424 25%, #2e2e2e 50%, #242424 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 0.375rem;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Focus mode */
+body.focus-mode header nav,
+body.focus-mode #btn-sleep {
+  display: none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Scrollable horizontal rows */
+.scroll-row {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+.scroll-row::-webkit-scrollbar { display: none; }
+
+/* Card hover */
+.card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}

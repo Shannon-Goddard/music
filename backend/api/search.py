@@ -34,17 +34,33 @@ def _response(status: int, body: dict) -> dict:
 
 
 def _search_by_genre(genre: str, limit: int) -> list[dict]:
+    # Try exact GSI match first
     try:
         response = _get_table().query(
             IndexName="GenreIndex",
             KeyConditionExpression=Key("genre").eq(genre),
             FilterExpression=Attr("health_status").eq("active"),
             Limit=limit,
-            ScanIndexForward=False,  # newest first
+            ScanIndexForward=False,
+        )
+        items = response.get("Items", [])
+        if items:
+            return items
+    except ClientError as e:
+        logger.error("search_by_genre GSI error: %s", e.response["Error"]["Message"])
+
+    # Fallback: case-insensitive scan
+    try:
+        response = _get_table().scan(
+            FilterExpression=(
+                Attr("health_status").eq("active") &
+                Attr("genre").contains(genre)
+            ),
+            Limit=limit,
         )
         return response.get("Items", [])
     except ClientError as e:
-        logger.error("search_by_genre error: %s", e.response["Error"]["Message"])
+        logger.error("search_by_genre scan error: %s", e.response["Error"]["Message"])
         return []
 
 

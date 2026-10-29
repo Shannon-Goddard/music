@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <meta name="description" content="Infinite Meta-Index Music Platform — millions of free, open-licensed tracks." />
+
+  <title>Music</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/css/app.css" />
+
+  <!-- Tailwind CDN for development — replace with build output in production -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: '#1a1a1a',
+            card: '#242424',
+            accent: '#1db954',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#0f0f0f] text-white min-h-screen flex flex-col">
+
+  <!-- App Shell -->
+  <header class="fixed top-0 left-0 right-0 z-40 bg-[#0f0f0f]/90 backdrop-blur border-b border-white/10 h-14 flex items-center px-4 gap-4">
+    <a href="#/" class="text-accent font-bold text-lg tracking-tight">♪ music</a>
+    <form id="search-form" class="flex-1 max-w-md">
+      <input
+        id="search-input"
+        type="search"
+        placeholder="Search artists, albums, songs..."
+        autocomplete="off"
+        class="w-full bg-white/10 rounded-full px-4 py-1.5 text-sm outline-none focus:ring-2 focus:ring-accent placeholder:text-white/40"
+      />
+    </form>
+    <nav class="hidden sm:flex gap-4 text-sm text-white/60">
+      <a href="#/" class="hover:text-white transition">Home</a>
+      <a href="#/library" class="hover:text-white transition">Library</a>
+      <a href="#/creator" class="hover:text-white transition">Creator</a>
+    </nav>
+  </header>
+
+  <!-- Main view container — views render here -->
+  <main id="app" class="flex-1 mt-14 mb-24 px-4 py-6 max-w-5xl mx-auto w-full"></main>
+
+  <!-- Persistent player footer -->
+  <footer id="player" class="fixed bottom-0 left-0 right-0 z-40 bg-[#181818] border-t border-white/10 h-20 flex items-center px-4 gap-4 hidden">
+    <!-- Track info -->
+    <div class="flex items-center gap-3 w-48 min-w-0">
+      <img id="player-art" src="" alt="" class="w-12 h-12 rounded object-cover bg-white/10 hidden" />
+      <div class="min-w-0">
+        <p id="player-title" class="text-sm font-medium truncate"></p>
+        <p id="player-artist" class="text-xs text-white/50 truncate"></p>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex-1 flex flex-col items-center gap-1">
+      <div class="flex items-center gap-6">
+        <button id="btn-prev" aria-label="Previous track" class="text-white/60 hover:text-white transition text-xl">⏮</button>
+        <button id="btn-play" aria-label="Play / Pause" class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center text-lg hover:scale-105 transition">▶</button>
+        <button id="btn-next" aria-label="Next track" class="text-white/60 hover:text-white transition text-xl">⏭</button>
+      </div>
+      <!-- Progress bar -->
+      <div class="w-full max-w-md flex items-center gap-2 text-xs text-white/40">
+        <span id="player-current">0:00</span>
+        <input id="player-seek" type="range" min="0" max="100" value="0" class="flex-1 accent-accent h-1 cursor-pointer" aria-label="Seek" />
+        <span id="player-duration">0:00</span>
+      </div>
+    </div>
+
+    <!-- Volume + extra -->
+    <div class="hidden sm:flex items-center gap-3 w-32 justify-end">
+      <button id="btn-sleep" aria-label="Sleep timer" title="Sleep timer" class="text-white/40 hover:text-white transition text-sm">⏱</button>
+      <input id="player-volume" type="range" min="0" max="1" step="0.05" value="1" class="w-20 accent-accent h-1 cursor-pointer" aria-label="Volume" />
+    </div>
+  </footer>
+
+  <!-- Hidden audio element — keep plain for AirPlay compatibility -->
+  <audio id="audio" preload="none"></audio>
+
+  <!-- JS modules -->
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

@@ -19,7 +19,13 @@ ALLOWED_LICENSES = (
     "publicdomain",
 )
 
-IA_SEARCH_QUERY = "mediatype:audio AND licenseurl:(*creativecommons* OR *publicdomain*)"
+# Target music collections specifically — excludes podcasts, sermons, lectures
+IA_SEARCH_QUERY = (
+    "mediatype:audio AND "
+    "licenseurl:(*creativecommons* OR *publicdomain*) AND "
+    "subject:(music OR song OR album OR instrumental OR jazz OR rock OR "
+    "classical OR folk OR electronic OR blues OR ambient OR pop OR hip-hop)"
+)
 
 
 class IAAdapter(BaseAdapter):
