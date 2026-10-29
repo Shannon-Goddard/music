@@ -43,6 +43,7 @@ class IAAdapter(BaseAdapter):
             "fl[]": ["identifier", "title", "creator", "subject", "year", "licenseurl"],
             "rows": PAGE_SIZE,
             "page": page + 1,
+            "sort[]": "addeddate desc",
             "output": "json",
         }
         try:
@@ -86,6 +87,9 @@ class IAAdapter(BaseAdapter):
 
         title = raw.get("title") or mp3_file.get("title") or identifier
         creator = raw.get("creator") or "Unknown Artist"
+        if isinstance(creator, list):
+            creator = creator[0] if creator else "Unknown Artist"
+        creator = str(creator).strip() or "Unknown Artist"
         artist_id = f"ART-IA-{hashlib.md5(creator.encode()).hexdigest()[:8]}"
 
         subjects = self._to_list(raw.get("subject"))

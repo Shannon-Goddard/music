@@ -16,7 +16,7 @@ total_skipped_invalid = 0
 total_skipped_duplicate = 0
 total_skipped_not_public = 0
 
-PAGES = 10  # 10 pages x 50 records = 500 candidates
+PAGES = 50  # 50 pages x 50 records = 2,500 candidates
 
 for page in range(PAGES):
     print(f'\n--- Page {page} ---')
@@ -42,9 +42,11 @@ for page in range(PAGES):
 
         if put_track(validated):
             total_written += 1
-            title = validated['title'].encode('ascii', 'replace').decode()
+            title  = validated['title'].encode('ascii', 'replace').decode()
             artist = validated['artist_name'].encode('ascii', 'replace').decode()
-            print(f'  + {title} | {artist} | {validated["genre"]}')
+            ct     = validated.get('content_type', 'other')
+            genre  = validated['genre'].encode('ascii', 'replace').decode()
+            print(f'  + [{ct}] {title} | {artist} | {genre}')
 
 print(f'\n=== Final Results ===')
 print(f'  Written:           {total_written}')
