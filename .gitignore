@@ -1,0 +1,32 @@
+# Environment & credentials — never commit
+.env
+.env.*
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+dist/
+*.egg-info/
+
+# Node / frontend tooling (if added later)
+node_modules/
+.npm/
+
+# AWS SAM local
+.aws-sam/
+samconfig.toml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
