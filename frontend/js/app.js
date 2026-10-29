@@ -50,7 +50,7 @@ if (!localStorage.getItem('music_theme')) {
 // ── Service Worker registration ───────────────────────────
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js').catch(e => {
+  navigator.serviceWorker.register('/music/service-worker.js').catch(e => {
     console.warn('SW registration failed:', e);
   });
 }

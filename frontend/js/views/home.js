@@ -20,7 +20,8 @@ const CONTENT_TYPES = [
   { label: '📖 Audiobooks', value: 'audiobook' },
   { label: '❓ Other',      value: 'other' },
 ];
-(app) {
+
+export async function render(app) {
   const session = loadSession();
   const recentRaw = _loadRecent();
 
