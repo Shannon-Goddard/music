@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — music by Loyal9</title>
+  <meta name="description" content="music is a free, open-licensed music platform built on the Internet Archive. Millions of tracks, no account required, free forever. Built by Shannon Goddard, Loyal9 LLC." />
+  <meta property="og:title" content="About — music by Loyal9" />
+  <meta property="og:description" content="Free, open-licensed music. Millions of tracks from the Internet Archive. No account, no ads, free forever." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9834;</text></svg>" />
+  <link rel="canonical" href="https://shannon-goddard.loyal9.app/music/about.html" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #111113; color: #e5e5e5; min-height: 100vh; overflow-x: hidden; }
+    a { color: #04AA6D; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header { position: sticky; top: 0; z-index: 40; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; background: rgba(17,17,19,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .wordmark { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; font-weight: 600; color: rgba(255,255,255,0.9); text-decoration: none; }
+    .wordmark span.sub { color: rgba(255,255,255,0.35); font-weight: 400; }
+    main { max-width: 680px; margin: 0 auto; padding: 2.5rem 1rem 5rem; }
+    h1 { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; }
+    .meta { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-bottom: 2rem; }
+    h2 { font-size: 0.875rem; font-weight: 700; color: #fff; margin-top: 2rem; margin-bottom: 0.5rem; letter-spacing: 0.01em; }
+    p { font-size: 0.875rem; color: rgba(255,255,255,0.6); line-height: 1.75; margin-top: 0.5rem; }
+    .card { background: #1c1c1f; border: 1px solid rgba(255,255,255,0.07); border-radius: 0.75rem; padding: 1.25rem; margin-top: 0.75rem; }
+    .card-title { font-size: 0.9375rem; font-weight: 700; color: #fff; }
+    .card-sub { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 0.125rem; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .pill { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); background: #242428; border: 1px solid rgba(255,255,255,0.09); border-radius: 9999px; padding: 0.25rem 0.75rem; text-decoration: none; }
+    .pill:hover { color: #fff; text-decoration: none; border-color: rgba(255,255,255,0.2); }
+    .divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 2rem 0; }
+    footer { text-align: center; padding: 2rem 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.25); border-top: 1px solid rgba(255,255,255,0.07); }
+    footer a { color: rgba(255,255,255,0.35); }
+    /* Drawer */
+    #menuOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 50; }
+    #menuDrawer { position: fixed; top: 0; right: 0; height: 100%; width: 256px; background: #1c1c1f; border-left: 1px solid rgba(255,255,255,0.08); z-index: 51; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; box-shadow: -8px 0 32px rgba(0,0,0,0.4); }
+    .drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .drawer-header span { font-size: 0.875rem; font-weight: 600; color: rgba(255,255,255,0.8); }
+    .drawer-close { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.4); padding: 4px; }
+    .drawer-close:hover { color: #fff; }
+    .drawer-nav { flex: 1; padding: 0.75rem 0.5rem; overflow-y: auto; }
+    .drawer-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; color: rgba(255,255,255,0.6); text-decoration: none; transition: background 0.15s, color 0.15s; }
+    .drawer-link:hover { background: #242428; color: #fff; text-decoration: none; }
+    .drawer-link.muted { color: rgba(255,255,255,0.35); }
+    .drawer-divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 0.5rem 0.5rem; }
+    .drawer-footer { padding: 1rem; border-top: 1px solid rgba(255,255,255,0.07); }
+    .beer-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.625rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #04AA6D; background: rgba(4,170,109,0.12); border: 1px solid rgba(4,170,109,0.3); text-decoration: none; transition: opacity 0.15s; }
+    .beer-btn:hover { opacity: 0.8; text-decoration: none; }
+    .hamburger { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 6px; color: rgba(255,255,255,0.6); }
+    .hamburger:hover { color: #fff; }
+    .hamburger span { display: block; width: 20px; height: 1px; background: currentColor; border-radius: 1px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/music/" class="wordmark">
+      <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <rect x="1"  y="7"  width="2.5" height="8"  rx="1.25" fill="#04AA6D"/>
+        <rect x="5"  y="3"  width="2.5" height="16" rx="1.25" fill="#04AA6D"/>
+        <rect x="9"  y="5"  width="2.5" height="12" rx="1.25" fill="#04AA6D"/>
+        <rect x="13" y="1"  width="2.5" height="20" rx="1.25" fill="#04AA6D"/>
+        <rect x="17" y="6"  width="2.5" height="10" rx="1.25" fill="#04AA6D"/>
+      </svg>
+      music <span class="sub">/ About</span>
+    </a>
+    <button class="hamburger" onclick="openMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <div id="menuOverlay" onclick="closeMenu()"></div>
+  <div id="menuDrawer">
+    <div class="drawer-header">
+      <span>Menu</span>
+      <button class="drawer-close" onclick="closeMenu()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <nav class="drawer-nav">
+      <a href="/music/" class="drawer-link">Home</a>
+      <a href="/music/#/library" class="drawer-link">Library</a>
+      <a href="/music/about.html" class="drawer-link">About</a>
+      <hr class="drawer-divider" />
+      <a href="/music/privacy.html" class="drawer-link muted">Privacy Policy</a>
+      <a href="/music/terms.html" class="drawer-link muted">Terms of Service</a>
+      <a href="/music/licenses.html" class="drawer-link muted">Open Source Licenses</a>
+      <hr class="drawer-divider" />
+      <a href="https://github.com/Shannon-Goddard/music" target="_blank" rel="noopener noreferrer" class="drawer-link muted">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        GitHub Repo
+      </a>
+    </nav>
+    <div class="drawer-footer">
+      <a href="https://www.buymeacoffee.com/goddardshannon9" target="_blank" rel="noopener noreferrer" class="beer-btn">
+        <svg xmlns="http://w3.org" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Mug Body -->
+          <path d="M6 8h12v10a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V8z" />
+          <!-- Handle -->
+          <path d="M18 11h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2" />
+          <!-- Foam/Bubbles Top Peak -->
+          <path d="M6 8a3 3 0 0 1 3-3 4 4 0 0 1 6 0 3 3 0 0 1 3 3" />
+          <!-- Liquid vertical detail lines inside -->
+          <line x1="10" y1="11" x2="10" y2="17" />
+          <line x1="14" y1="11" x2="14" y2="17" />
+        </svg>
+
+        Buy the Dev a Beer
+      </a>
+    </div>
+  </div>
+
+  <main>
+    <h1>About music</h1>
+    <p class="meta">Loyal9 LLC · Last updated: 2026</p>
+
+    <p>music is a free, open-licensed music platform. No account. No ads. No subscriptions. Just music — millions of tracks you can stream, explore, and save, free forever.</p>
+
+    <h2>The Music</h2>
+    <p>Every track on this platform is sourced from the <a href="https://archive.org" target="_blank" rel="noopener noreferrer">Internet Archive</a> — one of the world's largest digital libraries of freely available media. All content is either in the public domain or released under a Creative Commons license. Nothing here is pirated. Nothing here costs money to listen to.</p>
+    <p>The database behind this platform indexes hundreds of thousands of tracks across music, podcasts, lectures, audiobooks, and more — all legally free, all properly attributed.</p>
+
+    <h2>How It Works</h2>
+    <p>Search by artist, album, or song title. Browse by genre, mood, or content type. Filter results by artist and album. Stream directly in your browser. Save tracks to your library. It works offline as a PWA — install it to your home screen and it behaves like a native app.</p>
+    <p>No login required. Your library and listening history are stored locally on your device and never sent anywhere.</p>
+
+    <h2>Analytics</h2>
+    <p>This platform uses Google Analytics and Google Search Console. These tools collect anonymous, aggregate usage data — pages visited, search queries used, general location (country/region). This data is used solely to understand how the platform is being used so it can be improved. No personal identity data is collected. No data is sold or shared with third parties. See the <a href="/music/privacy.html">Privacy Policy</a> for full details.</p>
+
+    <hr class="divider" />
+
+    <h2>Built By</h2>
+
+    <div class="card">
+      <p class="card-title">Shannon Goddard</p>
+      <p class="card-sub">Founder, Loyal9 LLC · Riverside, CA</p>
+      <p>I spent 19 years in high-stakes retail operations before turning that operational discipline into technical fuel. After completing UC Berkeley Data Analytics and mastering full-stack development, I've been building tools that solve real problems — free, open, and built to last.</p>
+      <p style="margin-top:0.75rem">Loyal9 LLC was established in May 2023 in Riverside, CA. Our work spans agricultural data infrastructure, open-source archives, contractor tooling, and this platform — a music player built on the belief that access to culture shouldn't cost anything.</p>
+      <div class="pill-row">
+        <a href="https://shannon-goddard.loyal9.app" target="_blank" rel="noopener noreferrer" class="pill">Portfolio →</a>
+        <a href="https://github.com/Shannon-Goddard" target="_blank" rel="noopener noreferrer" class="pill">GitHub →</a>
+        <a href="mailto:shannon@loyal9.app" class="pill">Email →</a>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:0.75rem">
+      <p class="card-title">Amazon Q</p>
+      <p class="card-sub">AI Pair Programmer, Amazon Web Services</p>
+      <p>Every component, every route, every fix — built alongside Shannon from first line to first push.</p>
+    </div>
+
+    <hr class="divider" />
+
+    <h2>Open Source</h2>
+    <p>This project is MIT licensed. Code is free, always. Attribution required. The music database is built on public domain and Creative Commons content from the Internet Archive — free, always.</p>
+    <p style="margin-top:0.5rem"><a href="https://github.com/Shannon-Goddard/music" target="_blank" rel="noopener noreferrer">github.com/Shannon-Goddard/music →</a></p>
+
+  </main>
+
+  <footer>
+    © 2026 Loyal9 LLC · Riverside, CA ·
+    <a href="/music/privacy.html">Privacy</a> ·
+    <a href="/music/terms.html">Terms</a> ·
+    <a href="/music/licenses.html">Licenses</a>
+  </footer>
+
+  <script>
+    function openMenu() {
+      document.getElementById('menuOverlay').style.display = 'block';
+      document.getElementById('menuDrawer').style.transform = 'translateX(0)';
+    }
+    function closeMenu() {
+      document.getElementById('menuOverlay').style.display = 'none';
+      document.getElementById('menuDrawer').style.transform = 'translateX(100%)';
+    }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "About — music by Loyal9",
+    "url": "https://shannon-goddard.loyal9.app/music/about.html",
+    "description": "music is a free, open-licensed music platform built on the Internet Archive. Built by Shannon Goddard, Loyal9 LLC, Riverside CA.",
+    "author": {
+      "@type": "Person",
+      "name": "Shannon Goddard",
+      "url": "https://shannon-goddard.loyal9.app"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Loyal9 LLC",
+      "url": "https://loyal9.app"
+    }
+  }
+  </script>
+</body>
+</html>

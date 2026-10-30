@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f0f0f" />
+  <meta name="theme-color" content="#111113" />
   <meta name="description" content="Infinite Meta-Index Music Platform — millions of free, open-licensed tracks." />
 
   <title>Music</title>
@@ -17,69 +17,288 @@
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: { extend: { colors: { surface: '#1a1a1a', card: '#242424', accent: '#1db954' } } }
+      theme: {
+        extend: {
+          colors: {
+            surface: '#111113',
+            card:    '#1c1c1f',
+            raised:  '#242428',
+            border:  'rgba(255,255,255,0.08)',
+            accent:  '#04AA6D',
+          }
+        }
+      }
     }
   </script>
 </head>
-<body class="bg-[#0f0f0f] text-white min-h-screen flex flex-col">
+<body class="bg-surface text-white min-h-screen flex flex-col">
 
-  <!-- App Shell -->
-  <header class="fixed top-0 left-0 right-0 z-40 bg-[#0f0f0f]/90 backdrop-blur border-b border-white/10 h-14 flex items-center px-4 gap-4">
-    <a href="#/" class="text-accent font-bold text-lg tracking-tight">♪ music</a>
-    <form id="search-form" class="flex-1 max-w-md">
-      <input
-        id="search-input"
-        type="search"
-        placeholder="Search artists, albums, songs..."
-        autocomplete="off"
-        class="w-full bg-white/10 rounded-full px-4 py-1.5 text-sm outline-none focus:ring-2 focus:ring-accent placeholder:text-white/40"
-      />
+  <!-- ── Top header ─────────────────────────────────────── -->
+  <header class="fixed top-0 left-0 right-0 z-40 h-14 flex items-center px-4 gap-3"
+          style="background:rgba(17,17,19,0.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.07)">
+
+    <a href="#/" class="flex items-center gap-2 shrink-0 select-none">
+      <!-- Waveform wordmark icon -->
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <rect x="1"  y="7"  width="2.5" height="8"  rx="1.25" fill="#04AA6D"/>
+        <rect x="5"  y="3"  width="2.5" height="16" rx="1.25" fill="#04AA6D"/>
+        <rect x="9"  y="5"  width="2.5" height="12" rx="1.25" fill="#04AA6D"/>
+        <rect x="13" y="1"  width="2.5" height="20" rx="1.25" fill="#04AA6D"/>
+        <rect x="17" y="6"  width="2.5" height="10" rx="1.25" fill="#04AA6D"/>
+      </svg>
+      <span class="font-semibold text-sm tracking-wide text-white/90">music</span>
+    </a>
+
+    <form id="search-form" class="flex-1 max-w-lg">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Artists, albums, songs…"
+          autocomplete="off"
+          class="w-full bg-raised rounded-lg pl-9 pr-4 py-1.5 text-sm outline-none focus:ring-1 focus:ring-accent/60 placeholder:text-white/30 transition"
+        />
+      </div>
     </form>
-    <nav class="hidden sm:flex gap-4 text-sm text-white/60">
-      <a href="#/" class="hover:text-white transition">Home</a>
-      <a href="#/library" class="hover:text-white transition">Library</a>
-      <a href="#/creator" class="hover:text-white transition">Creator</a>
+
+    <!-- Desktop nav -->
+    <nav class="hidden sm:flex items-center gap-1 shrink-0">
+      <a href="#/" class="nav-link px-3 py-1.5 rounded-md text-sm text-white/50 hover:text-white hover:bg-raised transition">Home</a>
+      <a href="#/library" class="nav-link px-3 py-1.5 rounded-md text-sm text-white/50 hover:text-white hover:bg-raised transition">Library</a>
     </nav>
+
+    <!-- Hamburger button -->
+    <button onclick="openMenu()" aria-label="Menu" class="flex flex-col gap-[5px] p-1.5 shrink-0 text-white/60 hover:text-white transition">
+      <span class="block w-5 h-px bg-current rounded"></span>
+      <span class="block w-5 h-px bg-current rounded"></span>
+      <span class="block w-5 h-px bg-current rounded"></span>
+    </button>
   </header>
 
-  <!-- Main view container — views render here -->
-  <main id="app" class="flex-1 mt-14 mb-24 px-4 py-6 max-w-5xl mx-auto w-full"></main>
+  <!-- ── Hamburger drawer ───────────────────────────────── -->
+  <div id="menuOverlay" class="fixed inset-0 z-50 hidden" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)" onclick="closeMenu()"></div>
+  <div id="menuDrawer" class="fixed top-0 right-0 h-full w-64 z-50 flex flex-col shadow-2xl transform translate-x-full transition-transform duration-300"
+       style="background:#1c1c1f;border-left:1px solid rgba(255,255,255,0.08)">
 
-  <!-- Persistent player footer -->
-  <footer id="player" class="fixed bottom-0 left-0 right-0 z-40 bg-[#181818] border-t border-white/10 h-20 flex items-center px-4 gap-4 hidden">
-    <!-- Track info -->
-    <div class="flex items-center gap-3 w-48 min-w-0">
-      <img id="player-art" src="" alt="" class="w-12 h-12 rounded object-cover bg-white/10 hidden" />
-      <div class="min-w-0">
-        <p id="player-title" class="text-sm font-medium truncate"></p>
-        <p id="player-artist" class="text-xs text-white/50 truncate"></p>
+    <!-- Drawer header -->
+    <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid rgba(255,255,255,0.08)">
+      <span class="text-sm font-semibold text-white/80">Menu</span>
+      <button onclick="closeMenu()" aria-label="Close menu" class="text-white/40 hover:text-white transition">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Nav links -->
+    <nav class="flex-1 px-2 py-3 overflow-y-auto">
+      <a href="#/" onclick="closeMenu()" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-raised transition">Home</a>
+      <a href="#/library" onclick="closeMenu()" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-raised transition">Library</a>
+      <a href="/music/about.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-raised transition">About</a>
+
+      <div class="my-3" style="border-top:1px solid rgba(255,255,255,0.07)"></div>
+
+      <!-- Google Trust pages -->
+      <a href="/music/privacy.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-raised transition">Privacy Policy</a>
+      <a href="/music/terms.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-raised transition">Terms of Service</a>
+      <a href="/music/licenses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-raised transition">Open Source Licenses</a>
+
+      <div class="my-3" style="border-top:1px solid rgba(255,255,255,0.07)"></div>
+
+      <a href="https://github.com/Shannon-Goddard/music" target="_blank" rel="noopener noreferrer"
+         class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-raised transition">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+        GitHub Repo
+      </a>
+    </nav>
+
+    <div class="px-4 py-4" style="border-top:1px solid rgba(255,255,255,0.07)">
+      <a href="https://www.buymeacoffee.com/goddardshannon9" target="_blank" rel="noopener noreferrer"
+         class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-sm font-semibold transition hover:opacity-80"
+         style="background:rgba(4,170,109,0.15);border:1px solid rgba(4,170,109,0.3);color:#04AA6D">
+        <svg xmlns="http://w3.org" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Mug Body -->
+          <path d="M6 8h12v10a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V8z" />
+          <!-- Handle -->
+          <path d="M18 11h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2" />
+          <!-- Foam/Bubbles Top Peak -->
+          <path d="M6 8a3 3 0 0 1 3-3 4 4 0 0 1 6 0 3 3 0 0 1 3 3" />
+          <!-- Liquid vertical detail lines inside -->
+          <line x1="10" y1="11" x2="10" y2="17" />
+          <line x1="14" y1="11" x2="14" y2="17" />
+        </svg>
+        Buy the Dev a Beer
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function openMenu() {
+      document.getElementById('menuOverlay').classList.remove('hidden');
+      document.getElementById('menuDrawer').classList.remove('translate-x-full');
+    }
+    function closeMenu() {
+      document.getElementById('menuOverlay').classList.add('hidden');
+      document.getElementById('menuDrawer').classList.add('translate-x-full');
+    }
+  </script>
+
+  <!-- ── Main view ──────────────────────────────────────── -->
+  <main id="app" class="flex-1 mt-14 mb-28 px-4 py-6 max-w-5xl mx-auto w-full"></main>
+
+  <!-- ── Player footer ─────────────────────────────────── -->
+  <footer id="player"
+          class="fixed bottom-0 left-0 right-0 z-40 hidden"
+          style="background:rgba(20,20,23,0.97);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.08)">
+
+    <!-- Mobile layout: stacked -->
+    <div class="sm:hidden px-4 pt-3 pb-2 flex flex-col gap-2">
+
+      <!-- Track info row -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div id="player-art-wrap-m" class="w-9 h-9 rounded overflow-hidden bg-raised shrink-0 hidden">
+          <img id="player-art-m" src="" alt="" class="w-full h-full object-cover" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p id="player-title-m"  class="text-sm font-medium truncate leading-tight"></p>
+          <p id="player-artist-m" class="text-xs text-white/40 truncate"></p>
+        </div>
+      </div>
+
+      <!-- Controls row -->
+      <div class="flex items-center justify-between">
+        <button id="btn-shuffle-m" aria-label="Shuffle" class="text-white/30 hover:text-white transition p-1">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+            <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+          </svg>
+        </button>
+        <button id="btn-prev-m" aria-label="Previous track" class="text-white/60 hover:text-white transition p-1">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+        </button>
+        <button id="btn-play-m" aria-label="Play / Pause"
+                class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition shrink-0">
+          <svg id="icon-play-m" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="icon-pause-m" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button id="btn-next-m" aria-label="Next track" class="text-white/60 hover:text-white transition p-1">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6l8.5 6L6 18V6zm8.5 0h2v12h-2z"/></svg>
+        </button>
+        <button id="btn-repeat-m" aria-label="Repeat" class="text-white/30 hover:text-white transition p-1">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+            <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Progress row -->
+      <div class="flex items-center gap-2 text-xs text-white/30 tabular-nums">
+        <span id="player-current-m">0:00</span>
+        <input id="player-seek-m" type="range" min="0" max="100" value="0"
+               class="flex-1 h-1 cursor-pointer rounded-full" aria-label="Seek" />
+        <span id="player-duration-m">0:00</span>
       </div>
     </div>
 
-    <!-- Controls -->
-    <div class="flex-1 flex flex-col items-center gap-1">
-      <div class="flex items-center gap-6">
-        <button id="btn-prev" aria-label="Previous track" class="text-white/60 hover:text-white transition text-xl">⏮</button>
-        <button id="btn-play" aria-label="Play / Pause" class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center text-lg hover:scale-105 transition">▶</button>
-        <button id="btn-next" aria-label="Next track" class="text-white/60 hover:text-white transition text-xl">⏭</button>
-      </div>
-      <!-- Progress bar -->
-      <div class="w-full max-w-md flex items-center gap-2 text-xs text-white/40">
-        <span id="player-current">0:00</span>
-        <input id="player-seek" type="range" min="0" max="100" value="0" class="flex-1 accent-accent h-1 cursor-pointer" aria-label="Seek" />
-        <span id="player-duration">0:00</span>
-      </div>
-    </div>
+    <!-- Desktop layout: single row -->
+    <div class="hidden sm:flex max-w-5xl mx-auto px-4 h-20 items-center gap-4">
 
-    <!-- Volume + extra -->
-    <div class="hidden sm:flex items-center gap-3 w-32 justify-end">
-      <button id="btn-sleep" aria-label="Sleep timer" title="Sleep timer" class="text-white/40 hover:text-white transition text-sm">⏱</button>
-      <input id="player-volume" type="range" min="0" max="1" step="0.05" value="1" class="w-20 accent-accent h-1 cursor-pointer" aria-label="Volume" />
+      <!-- Track info -->
+      <div class="flex items-center gap-3 w-52 min-w-0 shrink-0">
+        <div id="player-art-wrap" class="w-11 h-11 rounded-md overflow-hidden bg-raised shrink-0 hidden">
+          <img id="player-art" src="" alt="" class="w-full h-full object-cover" />
+        </div>
+        <div class="min-w-0">
+          <p id="player-title"  class="text-sm font-medium truncate leading-tight"></p>
+          <p id="player-artist" class="text-xs text-white/40 truncate mt-0.5"></p>
+        </div>
+      </div>
+
+      <!-- Centre controls + progress -->
+      <div class="flex-1 flex flex-col items-center gap-1.5">
+        <div class="flex items-center gap-5">
+          <button id="btn-shuffle" aria-label="Shuffle" title="Shuffle" class="text-white/30 hover:text-white transition">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+              <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+            </svg>
+          </button>
+          <button id="btn-prev" aria-label="Previous track" class="text-white/60 hover:text-white transition">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+          </button>
+          <button id="btn-play" aria-label="Play / Pause"
+                  class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition shrink-0">
+            <svg id="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </button>
+          <button id="btn-next" aria-label="Next track" class="text-white/60 hover:text-white transition">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6l8.5 6L6 18V6zm8.5 0h2v12h-2z"/></svg>
+          </button>
+          <button id="btn-repeat" aria-label="Repeat" title="Repeat" class="text-white/30 hover:text-white transition">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+              <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+          </button>
+        </div>
+        <div class="w-full max-w-sm flex items-center gap-2 text-xs text-white/30 tabular-nums">
+          <span id="player-current">0:00</span>
+          <input id="player-seek" type="range" min="0" max="100" value="0"
+                 class="flex-1 h-1 cursor-pointer rounded-full" aria-label="Seek" />
+          <span id="player-duration">0:00</span>
+        </div>
+      </div>
+
+      <!-- Right: volume + sleep -->
+      <div class="flex items-center gap-3 w-40 justify-end shrink-0">
+        <button id="btn-sleep" aria-label="Sleep timer" title="Sleep timer" class="text-white/30 hover:text-white transition">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </button>
+        <svg class="text-white/30 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        <input id="player-volume" type="range" min="0" max="1" step="0.05" value="1"
+               class="w-20 h-1 cursor-pointer rounded-full" aria-label="Volume" />
+      </div>
     </div>
   </footer>
 
-  <!-- Hidden audio element — keep plain for AirPlay compatibility -->
-  <audio id="audio" preload="none"></audio>
+  <!-- ── Mobile bottom nav ──────────────────────────────── -->
+  <nav id="bottom-nav"
+       class="sm:hidden fixed bottom-0 left-0 right-0 z-30 h-14 flex items-center justify-around px-2"
+       style="background:rgba(17,17,19,0.97);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,0.07)">
+
+    <a href="#/" class="bottom-nav-item flex flex-col items-center gap-0.5 text-white/40 hover:text-white transition py-1 px-4">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span class="text-[10px] font-medium">Home</span>
+    </a>
+
+    <a href="#/search" class="bottom-nav-item flex flex-col items-center gap-0.5 text-white/40 hover:text-white transition py-1 px-4">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <span class="text-[10px] font-medium">Search</span>
+    </a>
+
+    <a href="#/library" class="bottom-nav-item flex flex-col items-center gap-0.5 text-white/40 hover:text-white transition py-1 px-4">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <span class="text-[10px] font-medium">Library</span>
+    </a>
+  </nav>
+
+  <!-- Hidden audio element -->
+  <audio id="audio" preload="none" crossorigin="anonymous"></audio>
 
   <!-- JS modules -->
   <script type="module" src="/music/js/app.js"></script>

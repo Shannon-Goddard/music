@@ -9,10 +9,13 @@ const SHELL_ASSETS = [
   `${BASE}/js/app.js`,
   `${BASE}/js/player.js`,
   `${BASE}/js/queue.js`,
+  `${BASE}/js/scroll.js`,
+  `${BASE}/js/library.js`,
   `${BASE}/js/api.js`,
   `${BASE}/js/i18n/en.js`,
   `${BASE}/js/views/home.js`,
   `${BASE}/js/views/search.js`,
+  `${BASE}/js/views/library.js`,
   `${BASE}/manifest.json`,
 ];
 

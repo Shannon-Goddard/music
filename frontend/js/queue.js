@@ -32,6 +32,13 @@ export function prev() {
   return null;
 }
 
+export function random() {
+  if (!queue.length) return null;
+  currentIndex = Math.floor(Math.random() * queue.length);
+  _persist();
+  return getCurrentTrack();
+}
+
 export function addToQueue(track) {
   queue.push(track);
   _persist();

@@ -19,11 +19,17 @@ ALLOWED_LICENSES = (
     "publicdomain",
 )
 
-# Broad CC audio query — content_type field classifies at ingest time
-IA_SEARCH_QUERY = (
-    "mediatype:audio AND "
-    "licenseurl:(*creativecommons* OR *publicdomain*)"
-)
+# Targeted collection queries — quality over quantity
+IA_COLLECTIONS = {
+    "netlabels": (
+        "mediatype:audio AND collection:netlabels AND "
+        "licenseurl:(*creativecommons* OR *publicdomain*)"
+    ),
+    "78rpm": (
+        "mediatype:audio AND collection:78rpm AND "
+        "licenseurl:(*creativecommons* OR *publicdomain*)"
+    ),
+}
 
 # Keywords used to classify content_type from subject/title
 _PODCAST_WORDS  = {"podcast", "episode", "show", "radio show", "broadcast"}
@@ -37,9 +43,10 @@ _MUSIC_WORDS    = {"music", "song", "album", "instrumental", "jazz", "rock", "cl
 
 class IAAdapter(BaseAdapter):
 
-    def fetch(self, page: int = 0) -> list[dict]:
+    def fetch(self, page: int = 0, collection: str = "netlabels") -> list[dict]:
+        query = IA_COLLECTIONS.get(collection, IA_COLLECTIONS["netlabels"])
         params = {
-            "q": IA_SEARCH_QUERY,
+            "q": query,
             "fl[]": ["identifier", "title", "creator", "subject", "year", "licenseurl"],
             "rows": PAGE_SIZE,
             "page": page + 1,
@@ -50,13 +57,13 @@ class IAAdapter(BaseAdapter):
             response = requests.get(IA_SEARCH_URL, params=params, timeout=15)
             response.raise_for_status()
             docs = response.json().get("response", {}).get("docs", [])
-            logger.info("IA page %d: fetched %d records", page, len(docs))
+            logger.info("IA [%s] page %d: fetched %d records", collection, page, len(docs))
             return docs
         except requests.RequestException as e:
             logger.error("IA fetch error on page %d: %s", page, e)
             return []
 
-    def normalize(self, raw: dict) -> dict | None:
+    def normalize(self, raw: dict, collection: str = "netlabels") -> dict | None:
         identifier = raw.get("identifier")
         if not identifier:
             return None
@@ -116,6 +123,7 @@ class IAAdapter(BaseAdapter):
             "is_downloadable": True,
             "attribution_text": f'"{title}" by {creator} — {license_url} — {source_url}',
             "play_count": 0,
+            "ia_collection": collection,
             "dataset_version": "v1.0.0",
             "health_status": "active",
             "http_status_code": 200,
