@@ -431,11 +431,12 @@
       <div>
         <p class="text-[11px] text-white/35 uppercase tracking-wider mb-3">Playback Speed</p>
         <div id="speed-btns" class="flex gap-2 flex-wrap">
-          ${['0.5','0.75','1','1.25','1.5','2'].map(s =>
-            `<button data-speed="${s}" onclick="_setSpeed(${s})"
-                     class="speed-btn px-3 py-1.5 rounded-lg text-xs font-medium border transition"
-                     style="background:#242428;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">${s}x</button>`
-          ).join('')}
+          <button data-speed="0.5"  onclick="_setSpeed(0.5)"  class="speed-btn px-3 py-1.5 rounded-lg text-xs font-medium border transition" style="background:#242428;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">0.5x</button>
+          <button data-speed="0.75" onclick="_setSpeed(0.75)" class="speed-btn px-3 py-1.5 rounded-lg text-xs font-medium border transition" style="background:#242428;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">0.75x</button>
+          <button data-speed="1"    onclick="_setSpeed(1)"    class="speed-btn px-3 py-1.5 rounded-lg text-xs font-medium border transition" style="background:#242428;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">1x</button>
+          <button data-speed="1.25" onclick="_setSpeed(1.25)" class="speed-btn px-3 py-1.5 rounded-lg text-xs font-medium border transition" style="background:#242428;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">1.25x</button>
+          <button data-speed="1.5"  onclick="_setSpeed(1.5)"  class="speed-btn px-3 py-1.5 rounded-lg text-xs font-medium border transition" style="background:#242428;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">1.5x</button>
+          <button data-speed="2"    onclick="_setSpeed(2)"    class="speed-btn px-3 py-1.5 rounded-lg text-xs font-medium border transition" style="background:#242428;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">2x</button>
         </div>
       </div>
 
