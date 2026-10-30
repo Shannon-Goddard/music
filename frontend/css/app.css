@@ -1,3 +1,10 @@
+/* ── Touch scroll lock ───────────────────────────────── */
+html, body {
+  overscroll-behavior: none;
+  touch-action: pan-y;
+  overflow-x: hidden;
+}
+
 /* ── Range inputs ─────────────────────────────────────── */
 input[type="range"] {
   -webkit-appearance: none;
@@ -73,7 +80,18 @@ input[type="range"] {
 
 /* ── Bottom nav spacing when player is visible ────────── */
 body.player-visible #bottom-nav {
-  bottom: 7.5rem; /* shift up above taller mobile player */
+  bottom: 7.5rem;
+}
+
+/* ── Bottom nav safe area padding (iOS home indicator) ── */
+#bottom-nav {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  height: auto;
+  min-height: 3.5rem;
+}
+#bottom-nav a {
+  padding-top: 0.625rem;
+  padding-bottom: 0.375rem;
 }
 
 /* ── Active nav link ────────────────────────────── */
@@ -169,4 +187,49 @@ body.paused .eq-bars span {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── Back to top button ────────────────────────────── */
+#back-to-top {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 1.25rem;
+  z-index: 35;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(28,28,31,0.95);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+  backdrop-filter: blur(8px);
+}
+#back-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+#back-to-top:hover { color: #04AA6D; border-color: rgba(4,170,109,0.4); }
+body.player-visible #back-to-top { bottom: 13rem; }
+
+/* ── Sticky count bar ───────────────────────────────── */
+#sticky-count-bar {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 30;
+  background: rgba(17,17,19,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0.5rem 1rem;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -1rem 0.75rem;
 }

@@ -6,6 +6,14 @@ import en from '../i18n/en.js';
 
 export async function render(app, query) {
   app.innerHTML = `
+    <div id="sticky-count-bar" aria-live="polite">
+      <p id="results-count" class="text-xs text-white/40"></p>
+      <button id="btn-play-all"
+              class="flex items-center gap-1.5 text-xs font-medium text-accent hover:opacity-80 transition">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Play all
+      </button>
+    </div>
     <div class="flex items-baseline justify-between mb-5">
       <h2 class="text-base font-semibold">Results for <span class="text-accent">${_esc(query)}</span></h2>
     </div>
@@ -18,14 +26,6 @@ export async function render(app, query) {
         <p class="section-label">Album</p>
         <div id="album-chips" class="scroll-row"></div>
       </div>
-    </div>
-    <div id="results-header" class="hidden flex items-center justify-between mb-3">
-      <p id="results-count" class="text-xs text-white/40"></p>
-      <button id="btn-play-all"
-              class="flex items-center gap-1.5 text-xs font-medium text-accent hover:opacity-80 transition">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Play all
-      </button>
     </div>
     <div id="results" class="space-y-2"></div>
     <p id="results-status" class="text-xs text-center py-4"></p>
@@ -51,11 +51,14 @@ export async function render(app, query) {
       // Append rows
       listEl.insertAdjacentHTML('beforeend', tracks.map((t, i) => _trackRow(t, offset + i)).join(''));
 
-      // Rebuild artist chips after each page (new artists may appear)
+      // Show sticky count bar once first results arrive
+      const bar = document.getElementById('sticky-count-bar');
+      if (bar) bar.style.display = 'flex';
+
+      // Rebuild artist chips after each page
       const artists = Object.keys(artistMap).sort();
       if (artists.length > 1) {
         document.getElementById('search-filters').classList.remove('hidden');
-        document.getElementById('results-header').classList.remove('hidden');
         _renderArtistChips(artists, activeArtist);
       }
       _updateCount(allTracks.length, activeArtist, activeAlbum, artistMap);

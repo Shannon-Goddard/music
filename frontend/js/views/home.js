@@ -62,6 +62,14 @@ export async function render(app) {
 
     <section id="genre-results" class="mb-8 hidden">
       <h2 id="genre-results-title" class="section-label"></h2>
+      <div id="sticky-count-bar" aria-live="polite">
+        <p id="results-count" class="text-xs text-white/40"></p>
+        <button id="btn-play-all"
+                class="flex items-center gap-1.5 text-xs font-medium text-accent hover:opacity-80 transition">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Play all
+        </button>
+      </div>
       <div id="genre-results-list" class="space-y-2">${_skeletons(5)}</div>
       <p id="genre-results-status" class="text-xs text-center py-4"></p>
     </section>
@@ -129,8 +137,17 @@ function _loadPaged(fetchFn, label) {
   list.innerHTML = _skeletons(5);
   setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
 
+  // Reset sticky bar
+  const bar = document.getElementById('sticky-count-bar');
+  if (bar) bar.style.display = 'none';
+
   // Accumulated tracks for queue playback
   let allLoaded = [];
+
+  // Play all wired after DOM exists
+  document.getElementById('btn-play-all')?.addEventListener('click', () => {
+    if (allLoaded.length) playQueue(allLoaded, 0);
+  });
 
   const scroller = new InfiniteScroll({
     listEl:   list,
@@ -140,6 +157,13 @@ function _loadPaged(fetchFn, label) {
       if (offset === 0) list.innerHTML = '';
       allLoaded = allLoaded.slice(0, offset).concat(tracks);
       list.insertAdjacentHTML('beforeend', tracks.map((t, i) => _trackRow(t, offset + i)).join(''));
+      // Update sticky count
+      const bar = document.getElementById('sticky-count-bar');
+      if (bar) {
+        bar.style.display = 'flex';
+        const countEl = document.getElementById('results-count');
+        if (countEl) countEl.textContent = `${allLoaded.length.toLocaleString()} loaded`;
+      }
     },
   });
 
