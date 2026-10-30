@@ -95,7 +95,7 @@ export async function render(app) {
 
   app.querySelectorAll('[data-type]').forEach(el => {
     el.addEventListener('click', () => {
-      _setActive(el, '[data-type]');
+      if (!_setActive(el, '[data-type]')) { activeScroll?.destroy(); activeScroll = null; return; }
       activeScroll?.destroy();
       activeScroll = _loadPaged(
         (offset) => searchByType(el.dataset.type, 20, offset),
@@ -106,7 +106,7 @@ export async function render(app) {
 
   app.querySelectorAll('[data-genre]').forEach(el => {
     el.addEventListener('click', () => {
-      _setActive(el, '[data-genre]');
+      if (!_setActive(el, '[data-genre]')) { activeScroll?.destroy(); activeScroll = null; return; }
       activeScroll?.destroy();
       activeScroll = _loadPaged(
         (offset) => searchByGenre(el.dataset.genre, 20, offset),
@@ -117,7 +117,7 @@ export async function render(app) {
 
   app.querySelectorAll('[data-radio]').forEach(el => {
     el.addEventListener('click', () => {
-      _setActive(el, '[data-radio]');
+      if (!_setActive(el, '[data-radio]')) return;
       _startRadio(el.dataset.radio);
     });
   });
@@ -137,12 +137,20 @@ export async function render(app) {
 }
 
 function _setActive(el, selector) {
-  document.querySelectorAll(selector).forEach(b => {
+  const wasActive = el.classList.contains('chip-active');
+  document.querySelectorAll('[data-genre],[data-type],[data-radio]').forEach(b => {
     b.classList.remove('chip-active');
     b.classList.add('chip');
   });
+  if (wasActive) {
+    // Deactivate — hide results and return null to signal caller
+    document.getElementById('genre-results')?.classList.add('hidden');
+    document.getElementById('home-empty')?.classList.remove('hidden');
+    return false;
+  }
   el.classList.add('chip-active');
   el.classList.remove('chip');
+  return true;
 }
 
 async function _startRadio(genre) {
