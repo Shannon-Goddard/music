@@ -232,9 +232,10 @@ body.player-visible #back-to-top { bottom: 13rem; }
   background: rgba(17,17,19,0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(255,255,255,0.06);
   padding: 0.4rem 1rem;
   display: none;
   align-items: center;
   justify-content: space-between;
-  margin: 0 -1rem 0.75rem;
+  margin-bottom: 0.75rem;
 }

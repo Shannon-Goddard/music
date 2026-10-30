@@ -50,7 +50,6 @@ export class InfiniteScroll {
       const data = await this._fetchFn(this._offset);
       const results = data.results || [];
 
-      // total comes from backend when available
       if (data.total != null) this._total = data.total;
 
       if (!results.length) {
@@ -62,13 +61,20 @@ export class InfiniteScroll {
       this._renderFn(results, this._offset);
       this._offset += results.length;
 
-      // If backend returned fewer than PAGE_SIZE, we've hit the end
       if (results.length < PAGE_SIZE) {
         this._done = true;
         this._observer.disconnect();
       }
 
       this._setStatus('idle');
+
+      // Re-check immediately in case sentinel is still visible after render
+      requestAnimationFrame(() => {
+        if (!this._done) {
+          const rect = this._sentinel.getBoundingClientRect();
+          if (rect.top < window.innerHeight + 200) this._loadMore();
+        }
+      });
     } catch {
       this._setStatus('error');
     } finally {

@@ -141,7 +141,11 @@ function _loadPaged(fetchFn, label) {
   section.classList.remove('hidden');
   title.textContent = label || '';
   list.innerHTML = _skeletons(5);
-  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  // Scroll window to the results section
+  setTimeout(() => {
+    const top = section.getBoundingClientRect().top + window.scrollY - 60;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }, 50);
 
   // Reset sticky bar
   const bar = document.getElementById('sticky-count-bar');
