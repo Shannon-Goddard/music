@@ -12,12 +12,13 @@ This document is the master engineering blueprint for the platform. It reflects 
 | GSIs | ✅ All 7 ACTIVE | See Section 2 |
 | Ingestion — IA netlabels | ✅ Done | 4,734 records |
 | Ingestion — IA 78rpm | ✅ Done | 4,884 records |
-| Ingestion — IA opensource_audio | 🔄 Running | Up to 100,000 items, ~80 pages/hr |
-| Ingestion — IA audio_music | 🔄 Running | Up to 25,000 items |
-| Ingestion — IA georgeblood | 🔄 Running | Up to 25,000 items, pre-1928 public domain |
-| Ingestion — IA audio_bookspoetry | 🔄 Running | Up to 10,000 items |
-| Ingestion — IA librivoxaudio | 🔄 Running | Up to 5,000 items |
-| Ingestion — Jamendo | ✅ Done | ~13,656 CC tracks, 46 genre tags |
+| Ingestion — IA opensource_audio | ✅ Done | 7,497 records (1,739 deduped) |
+| Ingestion — IA audio_music | ✅ Done | 4,893 records (4,857 deduped) |
+| Ingestion — IA georgeblood | ✅ Done | 9,697 records (4 deduped) |
+| Ingestion — IA audio_bookspoetry | ✅ Done | 6,144 records (3,618 deduped) |
+| Ingestion — IA librivoxaudio | ✅ Done | 3,819 records (1,096 deduped) |
+| Ingestion — Jamendo | ✅ Done | 13,656 CC tracks, 46 genre tags |
+| **Total catalog** | **55,666 tracks** | IA: 42,010 — Jamendo: 13,656 |
 | Ingestion — ccMixter | ❌ Removed | CORS 403 on content server — unplayable |
 | `content_type` classification | ✅ Done | music / podcast / lecture / audiobook / interview / other |
 | `language` field | ✅ Done | ISO 639-2 stored per record, null = language-agnostic |
@@ -25,7 +26,7 @@ This document is the master engineering blueprint for the platform. It reflects 
 | API — `/artists/search` | ✅ Live | `q=` → `{ artist_id, artist_name, track_count }` |
 | API — `/albums/search` | ✅ Live | `artist_id=` (GSI) or `q=` (scan) |
 | Lambda memory | ✅ 1024MB | All 4 Lambdas, 30s timeout |
-| API — `/stats` | ✅ Live | total, by_platform, by_type, top 20 genres — cached in Lambda memory |
+| API — `/stats` | ✅ Live | 55,666 total — IA: 42,010, Jamendo: 13,656 |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
 | Icons | ✅ Done | Real PNG icons, apple-touch-icon → `logo-180.png` (solid bg) |
 | Service worker | ✅ Fixed | Cache `v4`, 206 fix, offline pre-cache next 2 tracks |
@@ -269,11 +270,11 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 |---|---|---|---|
 | Internet Archive — netlabels | ✅ Done | 4,734 | Modern CC netlabel releases |
 | Internet Archive — 78rpm | ✅ Done | 4,884 | Pre-1930s jazz/blues |
-| Internet Archive — opensource_audio | 🔄 Running | TBD | 3M item pool, CC-licensed |
-| Internet Archive — audio_music | 🔄 Running | TBD | 535k item pool, music-focused |
-| Internet Archive — georgeblood | 🔄 Running | TBD | 187k digitized 78rpm/shellac, pre-1928 PD |
-| Internet Archive — audio_bookspoetry | 🔄 Running | TBD | 75k audiobooks + poetry |
-| Internet Archive — librivoxaudio | 🔄 Running | TBD | 21k LibriVox public domain audiobooks |
+| Internet Archive — opensource_audio | ✅ Done | 7,497 | 1,739 deduped |
+| Internet Archive — audio_music | ✅ Done | 4,893 | 4,857 deduped — heavy overlap w/ other collections |
+| Internet Archive — georgeblood | ✅ Done | 9,697 | 4 deduped — unique 78rpm/shellac catalog |
+| Internet Archive — audio_bookspoetry | ✅ Done | 6,144 | 3,618 deduped |
+| Internet Archive — librivoxaudio | ✅ Done | 3,819 | 1,096 deduped, overlaps w/ bookspoetry |
 | Jamendo | ✅ Done | ~13,656 | 46 genre tags, all CC-licensed |
 | ccMixter | ❌ Removed | 0 | Content server 403s cross-origin — unplayable |
 | Free Music Archive (FMA) | ❌ Dead end | 0 | API dead, hotlinking prohibited |
@@ -394,9 +395,11 @@ music/
 
 ## 8. Pending Items (Prioritized)
 
-### Next — finish running IA collections
-- All 5 new collections running in parallel terminals
-- After completion: update live record count, commit results
+### Next — content_type backfill
+- `other` = 25,718 records — mostly georgeblood + older IA items with weak metadata
+- georgeblood records are all music by definition
+- librivoxaudio records are all audiobooks by definition
+- Quick script keyed off `ia_collection` would reclassify most without touching the API
 
 ### Pending (lower priority)
 - Settings view — crossfade, playback speed, cache management
