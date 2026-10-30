@@ -1,4 +1,4 @@
-# Architecture & Technical Roadmap: Infinite Meta-Index Music Platform
+﻿# Architecture & Technical Roadmap: Infinite Meta-Index Music Platform
 
 This document is the master engineering blueprint for the platform. It reflects the current live state of the project and the forward roadmap.
 
@@ -18,22 +18,27 @@ This document is the master engineering blueprint for the platform. It reflects 
 | Ingestion — IA audio_bookspoetry | ✅ Done | 6,144 records (3,618 deduped) |
 | Ingestion — IA librivoxaudio | ✅ Done | 3,819 records (1,096 deduped) |
 | Ingestion — Jamendo | ✅ Done | 13,656 CC tracks, 46 genre tags |
-| **Total catalog** | **55,666 tracks** | IA: 42,010 — Jamendo: 13,656 |
+| Ingestion — Wikimedia Commons | ✅ Done | 3,559 tracks — 15 genre categories, CC audio, ogg/mp3/flac |
+
+| **Total catalog** | **~61,500 tracks** | IA: 42,037 — Jamendo: 13,656 — Wikimedia: 3,559 |
 | Ingestion — ccMixter | ❌ Removed | CORS 403 on content server — unplayable |
 | `content_type` classification | ✅ Done | music / podcast / lecture / audiobook / interview / other |
 | `language` field | ✅ Done | ISO 639-2 stored per record, null = language-agnostic |
 | API — `/tracks/search` | ✅ Live | `q=`, `genre=`, `type=`, `lang=`, `offset=`, `total` |
 | API — `/artists/search` | ✅ Live | `q=` → `{ artist_id, artist_name, track_count }` |
 | API — `/albums/search` | ✅ Live | `artist_id=` (GSI) or `q=` (scan) |
-| Lambda memory | ✅ 1024MB | All 4 Lambdas, 30s timeout |
-| API — `/stats` | ✅ Live | 55,666 total — IA: 42,010, Jamendo: 13,656 |
+| API — `/radio` | ✅ Live | `genre=`, `limit=` — random sample, auto-plays in UI |
+
+| Lambda memory | ✅ 1024MB | All Lambdas, 30s timeout |
+| API — `/stats` | ✅ Live | ~61,500 total — IA: 42,037, Jamendo: 13,656, Wikimedia: 3,559 |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
 | Icons | ✅ Done | Real PNG icons, apple-touch-icon → `logo-180.png` (solid bg) |
-| Service worker | ✅ Fixed | Cache `v4`, 206 fix, offline pre-cache next 2 tracks |
+| Service worker | ✅ Fixed | Cache `v9`, 206 fix, offline pre-cache next 2 tracks |
 | Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
 | Attribution ⓘ sheet | ✅ Live | Bottom sheet on every track row — license, attribution, copy, download |
 | Continue where left off | ✅ Live | 10s position write, resume bar shows track + timestamp, seeks on resume |
 | Offline queue pre-cache | ✅ Live | Next 2 track URLs sent to SW `PRECACHE_AUDIO` on every play |
+| Radio UI | ✅ Live | Radio section on home — tap genre, 50 random tracks auto-play instantly |
 
 **API base URL:** `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1`
 
@@ -43,7 +48,7 @@ This document is the master engineering blueprint for the platform. It reflects 
 
 ```
 [ Data Sources ]
-  Internet Archive (7 collections) ✅  Jamendo ✅  MusicBrainz (enrichment) 🔜
+  Internet Archive (7 collections) ✅  Jamendo ✅  Wikimedia Commons ✅  MusicBrainz (enrichment) 🔜
        │
        ▼
 [ Ingestion & Normalization Layer ]  ← threaded, 10 workers/page, resumable
@@ -169,7 +174,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/tracks/{id}` | `music-track` | ✅ Live — single track by `track_id`, includes all MB fields |
-| GET | `/radio?genre=` | pending | Randomized active tracks by genre |
+| GET | `/radio?genre=` | `music-radio` | ✅ Live — random sample of 50 active tracks by genre |
 
 ---
 
@@ -185,7 +190,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 ### Phase 6: Production Hardening ✅ Complete
 
 - **6.1** CloudWatch alarms — Lambda error rate, 5xx rate
-- **6.2** WAF rate limiting — 100 req/5min per IP, WebACL `music-api-waf` attached to stage `v1`
+- **6.2** WAF rate limiting — 1000 req/5min per IP, WebACL `music-api-waf` attached to stage `v1`
 - **6.3** CORS locked to `https://shannon-goddard.github.io` on all 5 Lambdas
 
 ---
@@ -276,7 +281,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Internet Archive — audio_bookspoetry | ✅ Done | 6,144 | 3,618 deduped |
 | Internet Archive — librivoxaudio | ✅ Done | 3,819 | 1,096 deduped, overlaps w/ bookspoetry |
 | Jamendo | ✅ Done | ~13,656 | 46 genre tags, all CC-licensed |
-| Wikimedia Commons | 🔄 In progress | — | 15 genre categories, CC audio, CORS:*, ogg/mp3/flac |
+| Wikimedia Commons | 🔄 In progress | — | 15 genre categories, CC audio, CORS:*, ogg/mp3/flac — 132 dupes, 162 skipped (non-CC) |
 | ccMixter | ❌ Removed | 0 | Content server 403s cross-origin — unplayable |
 | Free Music Archive (FMA) | ❌ Dead end | 0 | API dead, hotlinking prohibited |
 | CCMusic Search | ❌ Dead end | 0 | Not a real API — search UI only, no programmatic access |
@@ -403,17 +408,43 @@ music/
 
 ## 8. Pending Items (Prioritized)
 
-### Next — content_type backfill
-- `other` = 25,718 records — mostly georgeblood + older IA items with weak metadata
-- georgeblood records are all music by definition
-- librivoxaudio records are all audiobooks by definition
-- Quick script keyed off `ia_collection` would reclassify most without touching the API
+### 1. content_type backfill 🔜 Next
+- ~25,733 records — mostly georgeblood + older IA items with weak metadata
+- `georgeblood` collection → all `music` by definition
+- `librivoxaudio` collection → all `audiobook` by definition
+- Script keyed off `ia_collection` field — scan + `update_item` loop, no API changes needed
+- Biggest quality improvement per effort — cleans up the Type filter on home screen
 
-### Pending (lower priority)
-- MusicBrainz metadata enrichment — backfill script running, cover art + artist IDs + genre tags
-- `/radio?genre=` randomized endpoint
-- CloudWatch alarms — Lambda error rate, 5xx rate
-- Settings view — ✅ Live (speed, crossfade, cache clear)
+### 2. duration_sec backfill 🔜
+- IA tracks missing `duration_sec` — gap is visible now that Wikimedia tracks have it
+- Hit `archive.org/metadata/{identifier}` per track, parse `length` from file list
+- One request per track, rate-limited — slower but straightforward
+
+### 3. More Wikimedia genres 🔜
+- Current adapter maps 15 genres — more categories worth adding:
+  `Blues`, `Reggae`, `Country`, `Soul`, `R&B`, `Gospel`, `Latin`, `Funk`
+- Same adapter, just extend `GENRE_CATEGORIES` dict in `wikimedia_adapter.py`
+- Re-run `test_ingest_wikimedia.py` for new genres only
+
+### 4. Openverse 🔜 (when API recovers)
+- Search endpoint currently timing out — stats endpoint confirmed working
+- 644k Jamendo tracks + 3.98M Wikimedia not yet touched via their API
+- Would 10x the catalog — highest volume multiplier available
+- Revisit periodically; `scripts/probe_openverse.py` exists to check status
+
+### 5. Health checker scheduling
+- `link_checker.py` exists and works — runs manually only
+- Dead links accumulate over time especially in IA
+- Add EventBridge cron rule → Lambda trigger, weekly run
+
+### 6. Monthly ingest cron
+- GitHub Actions workflow to re-run adapters and pick up new uploads
+- Wikimedia and Jamendo both add content continuously
+
+### 7. MusicBrainz metadata enrichment
+- Backfill script exists (`scripts/backfill_musicbrainz.py`)
+- Hit rate ~3–4% on georgeblood/78rpm due to messy metadata
+- Lower priority until content_type and duration are clean
 
 ---
 
@@ -429,6 +460,7 @@ music/
 | Lambda — albums | `music-albums` (1024MB, 30s) |
 | Lambda — stats | `music-stats` (1024MB, 30s) |
 | Lambda — track | `music-track` (512MB, 10s) |
+| Lambda — radio | `music-radio` (256MB, 30s) |
 | Lambda role | `arn:aws:iam::170377509849:role/music-lambda-role` |
 | WAF WebACL | `music-api-waf` — 100 req/5min per IP, attached to stage `v1` |
 | CORS origin | `https://shannon-goddard.github.io` (all 5 Lambdas) |
