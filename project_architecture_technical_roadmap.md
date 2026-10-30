@@ -24,11 +24,15 @@ This document is the master engineering blueprint for the platform. It reflects 
 | API — `/tracks/search` | ✅ Live | `q=`, `genre=`, `type=`, `lang=`, `offset=`, `total` |
 | API — `/artists/search` | ✅ Live | `q=` → `{ artist_id, artist_name, track_count }` |
 | API — `/albums/search` | ✅ Live | `artist_id=` (GSI) or `q=` (scan) |
-| Lambda memory | ✅ 1024MB | All 3 Lambdas, 30s timeout |
+| Lambda memory | ✅ 1024MB | All 4 Lambdas, 30s timeout |
+| API — `/stats` | ✅ Live | total, by_platform, by_type, top 20 genres — cached in Lambda memory |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
-| Icons | ✅ Done | Real PNG icons, apple-touch-icon for home screen saves |
-| Service worker | ✅ Fixed | Cache `v4`, 206 Partial Content responses skipped |
+| Icons | ✅ Done | Real PNG icons, apple-touch-icon → `logo-180.png` (solid bg) |
+| Service worker | ✅ Fixed | Cache `v4`, 206 fix, offline pre-cache next 2 tracks |
 | Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
+| Attribution ⓘ sheet | ✅ Live | Bottom sheet on every track row — license, attribution, copy, download |
+| Continue where left off | ✅ Live | 10s position write, resume bar shows track + timestamp, seeks on resume |
+| Offline queue pre-cache | ✅ Live | Next 2 track URLs sent to SW `PRECACHE_AUDIO` on every play |
 
 **API base URL:** `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1`
 
@@ -157,6 +161,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | GET | `/artists/search?q=` | `music-artists` | ✅ Live |
 | GET | `/albums/search?artist_id=` | `music-albums` | ✅ Live |
 | GET | `/albums/search?q=` | `music-albums` | ✅ Live |
+| GET | `/stats` | `music-stats` | ✅ Live — total, by_platform, by_type, top 20 genres |
 
 #### Pending Endpoints
 
@@ -164,13 +169,12 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 |---|---|---|
 | GET | `/tracks/{id}` | Single track detail |
 | GET | `/radio?genre=` | Randomized active tracks by genre |
-| GET | `/stats` | Total count, source breakdown, genre distribution |
 
 ---
 
 ### Phase 5: PWA & Cross-Device Playback ✅ Complete
 
-- PWA manifest + service worker — cache `v4`, 206 fix applied
+- PWA manifest + service worker — cache `v4`, 206 fix, offline pre-cache next 2 tracks
 - Real PNG icons — favicon, PWA splash, apple-touch-icon
 - Media Session API — Bluetooth / lock screen / car stereo controls
 - AirPlay — zero-config via `<audio>` element
@@ -201,10 +205,10 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Media Session API | ✅ Live | Bluetooth / lock screen / car stereo |
 | Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
 | Cover art fallback | ✅ Live | Deterministic gradient per `album_id` — 12 palette pairs, hash-derived angle, note/eq-bars overlay |
-| Attribution "i" button | 🔜 Pending | Tap to see CC license + copy attribution string |
-| Download button | 🔜 Pending | `stream_url` with `download` attr where `is_downloadable: true` |
-| Continue where left off | 🔜 Pending | 10s position write + Resume prompt on open |
-| Offline queue caching | 🔜 Pending | Pre-fetch next 2–3 audio URLs via Cache API |
+| Attribution ⓘ button | ✅ Live | Bottom sheet — license URL, attribution text + copy, source link, download if `is_downloadable` |
+| Download button | ✅ Live | Inside attribution sheet, `stream_url` with `download` attr where `is_downloadable: true` |
+| Continue where left off | ✅ Live | 10s position write, resume bar shows track + timestamp, `playAt()` seeks on resume |
+| Offline queue caching | ✅ Live | Next 2 track URLs pre-fetched via SW `PRECACHE_AUDIO` on every play |
 | Crossfade | 🔜 Pending | Web Audio API, configurable duration |
 | Playback speed | 🔜 Pending | `playbackRate` control |
 | Settings view | 🔜 Pending | Crossfade, speed, cache management |
@@ -229,15 +233,27 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 - Media Session API — Bluetooth / lock screen / hardware controls
 - Audio error → skip to next (no silent failures)
 - Recently played written to localStorage on every `play()`
+- `playAt(track, positionSec)` — plays track then seeks after `canplay`
+- `_precacheNext()` — posts next 2 queue URLs to SW `PRECACHE_AUDIO` on every play
 
 ### API (`api.js`)
 - `lang` state — `getLang()` / `setLang()`, persists to localStorage, defaults to `'eng'`
 - `_langParam()` appended to all search calls — `&lang=all` when set to all, empty otherwise
 - All search functions: `searchTracks`, `searchByGenre`, `searchByType`, `searchArtists`, `searchAlbums`
 
+### Attribution Sheet (`index.html`)
+- `openInfo(encoded)` / `closeInfo()` — global functions, bottom sheet slides up from any track row
+- Shows: title, artist, license URL (linked), attribution text + copy button, source link, download if `is_downloadable`
+- Track data passed as `encodeURIComponent(JSON.stringify({...}))` on `data-info` attribute
+
+### Continue Where Left Off (`queue.js` + `player.js`)
+- `savePosition(sec)` stores full track object + position to `music_session` every 10s
+- Resume bar on home shows track title + saved timestamp, calls `playAt()` on click
+
 ### Service Worker (`service-worker.js`)
 - Cache `v4` — shell assets cached on install, includes `utils.js`
 - 206 Partial Content responses skipped in both `_cacheFirst` and `PRECACHE_AUDIO`
+- `PRECACHE_AUDIO` message handler — pre-fetches next 2 track URLs from player on every play
 - API calls always network-only
 
 ### Views
@@ -287,7 +303,7 @@ python -u tests\test_ingest_ia.py opensource_audio --start-page 150
 
 | Issue | Status | Notes |
 |---|---|---|
-| Service worker 206 error | ✅ Fixed | Cache `v3` skips 206 responses |
+| Service worker 206 error | ✅ Fixed | Cache `v4` skips 206 responses |
 | ccMixter CORS 403 | ✅ Resolved | All records wiped from DB |
 | Lambda total count cache | ⚠️ Known | `total` caches ~5min after large DB changes |
 | Cover art missing on most tracks | ✅ Fixed | Deterministic gradient fallback via `utils.js` — same track always same gradient |
@@ -303,7 +319,8 @@ music/
 │   ├── api/
 │   │   ├── search.py               # Lambda: GET /tracks/search (q, genre, type, lang, offset)
 │   │   ├── artists.py              # Lambda: GET /artists/search?q=
-│   │   └── albums.py               # Lambda: GET /albums/search
+│   │   ├── albums.py               # Lambda: GET /albums/search
+│   │   └── stats.py                # Lambda: GET /stats — total, by_platform, by_type, top_genres
 │   ├── db/
 │   │   └── dynamo_client.py
 │   ├── health/
@@ -320,7 +337,7 @@ music/
 ├── frontend/                       # Deployed to gh-pages branch
 │   ├── index.html                  # EN/All language toggle in header
 │   ├── manifest.json               # PWA: 3 icon sizes
-│   ├── service-worker.js           # Cache v3, 206 fix
+│   ├── service-worker.js           # Cache v4, 206 fix, PRECACHE_AUDIO handler
 │   ├── about.html
 │   ├── privacy.html
 │   ├── terms.html
@@ -328,9 +345,9 @@ music/
 │   ├── css/
 │   │   └── app.css
 │   ├── js/
-│   │   ├── app.js                  # Router, lang toggle wiring, keyboard shortcuts
-│   │   ├── player.js               # Media Session API, sleep timer, shuffle, repeat
-│   │   ├── queue.js
+│   │   ├── app.js                  # Router, lang toggle, back-to-top, keyboard shortcuts
+│   │   ├── player.js               # play(), playAt(), sleep timer, shuffle, repeat, precache
+│   │   ├── queue.js                # setQueue, savePosition (stores full track + sec)
 │   │   ├── api.js                  # getLang/setLang, lang= param on all search calls
 │   │   ├── utils.js                # coverGradient(id), artThumb(track) — shared across views
 │   │   ├── scroll.js
@@ -381,20 +398,12 @@ music/
 - All 5 new collections running in parallel terminals
 - After completion: update live record count, commit results
 
-### High priority (UX)
-- Attribution "i" button — tap on any track row to see CC license + copy attribution string
-- Download button — `stream_url` with `download` attribute where `is_downloadable: true`
-
-### Medium priority
-- Continue where left off — 10s position write to localStorage + Resume prompt on open
-- Offline queue caching — pre-fetch next 2–3 audio URLs via Cache API
-- `/stats` endpoint — total count, source breakdown, genre distribution
-
-### Lower priority
+### Pending (lower priority)
 - Settings view — crossfade, playback speed, cache management
 - Crossfade — Web Audio API, configurable duration
 - Playback speed — `playbackRate` control
 - `/tracks/{id}` single track endpoint
+- `/radio?genre=` randomized endpoint
 - WAF + CORS hardening
 - MusicBrainz metadata enrichment (artist IDs, album art, BPM)
 
@@ -410,6 +419,7 @@ music/
 | Lambda — search | `music-search` (1024MB, 30s) |
 | Lambda — artists | `music-artists` (1024MB, 30s) |
 | Lambda — albums | `music-albums` (1024MB, 30s) |
+| Lambda — stats | `music-stats` (1024MB, 30s) |
 | Lambda role | `arn:aws:iam::170377509849:role/music-lambda-role` |
 | API Gateway ID | `9jxmxtjybb` |
 | API base URL | `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1` |
