@@ -1,8 +1,11 @@
 /* ── Touch scroll lock ───────────────────────────────── */
-html, body {
+html {
+  overscroll-behavior: none;
+}
+body {
   overscroll-behavior: none;
   touch-action: pan-y;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ── Range inputs ─────────────────────────────────────── */
