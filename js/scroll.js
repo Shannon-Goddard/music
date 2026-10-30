@@ -67,6 +67,7 @@ export class InfiniteScroll {
       }
 
       this._setStatus('idle');
+      this._loading = false;
 
       // Re-check immediately in case sentinel is still visible after render
       requestAnimationFrame(() => {
@@ -76,9 +77,8 @@ export class InfiniteScroll {
         }
       });
     } catch {
-      this._setStatus('error');
-    } finally {
       this._loading = false;
+      this._setStatus('error');
     }
   }
 
