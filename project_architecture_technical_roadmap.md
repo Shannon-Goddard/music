@@ -8,19 +8,27 @@ This document is the master engineering blueprint for the platform. It reflects 
 
 | Layer | Status | Detail |
 |---|---|---|
-| DynamoDB table | ✅ Live | `music-tracks`, `us-east-1`, ~23,274 records |
+| DynamoDB table | ✅ Live | `music-tracks`, `us-east-1` |
 | GSIs | ✅ All 7 ACTIVE | See Section 2 |
-| Ingestion — Internet Archive | ✅ Done | `netlabels` (4,734) + `78rpm` (4,884) = 9,618 |
-| Ingestion — Jamendo | ✅ Done | 46 genre tags swept, ~13,656 CC tracks |
-| Ingestion — ccMixter | ❌ Removed | 19,508 ingested, wiped — ccMixter content server 403s all cross-origin requests, unplayable |
-| `content_type` classification | ✅ Done | All records classified at ingest |
-| API — `/tracks/search` | ✅ Live | `q=`, `genre=`, `type=`, `offset=`, `total` in response |
+| Ingestion — IA netlabels | ✅ Done | 4,734 records |
+| Ingestion — IA 78rpm | ✅ Done | 4,884 records |
+| Ingestion — IA opensource_audio | 🔄 Running | Up to 100,000 items, ~80 pages/hr |
+| Ingestion — IA audio_music | 🔄 Running | Up to 25,000 items |
+| Ingestion — IA georgeblood | 🔄 Running | Up to 25,000 items, pre-1928 public domain |
+| Ingestion — IA audio_bookspoetry | 🔄 Running | Up to 10,000 items |
+| Ingestion — IA librivoxaudio | 🔄 Running | Up to 5,000 items |
+| Ingestion — Jamendo | ✅ Done | ~13,656 CC tracks, 46 genre tags |
+| Ingestion — ccMixter | ❌ Removed | CORS 403 on content server — unplayable |
+| `content_type` classification | ✅ Done | music / podcast / lecture / audiobook / interview / other |
+| `language` field | ✅ Done | ISO 639-2 stored per record, null = language-agnostic |
+| API — `/tracks/search` | ✅ Live | `q=`, `genre=`, `type=`, `lang=`, `offset=`, `total` |
 | API — `/artists/search` | ✅ Live | `q=` → `{ artist_id, artist_name, track_count }` |
-| API — `/albums/search` | ✅ Live | `artist_id=` (GSI) or `q=` (scan) → albums with track counts |
-| Lambda memory | ✅ 1024MB | All 3 Lambdas — required for full-scan ops on ~23k records |
+| API — `/albums/search` | ✅ Live | `artist_id=` (GSI) or `q=` (scan) |
+| Lambda memory | ✅ 1024MB | All 3 Lambdas, 30s timeout |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
-| Icons | ✅ Updated | `icon.png` → `icon-192.png` + `icon-512.png`, `logo.png` → `logo-180.png` apple-touch-icon |
-| Service worker | ✅ Fixed | Cache `v3`, 206 Partial Content responses no longer attempted to cache |
+| Icons | ✅ Done | Real PNG icons, apple-touch-icon for home screen saves |
+| Service worker | ✅ Fixed | Cache `v3`, 206 Partial Content responses skipped |
+| Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
 
 **API base URL:** `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1`
 
@@ -30,23 +38,24 @@ This document is the master engineering blueprint for the platform. It reflects 
 
 ```
 [ Data Sources ]
-  Internet Archive ✅  Jamendo ✅  Internet Archive (more collections) 🔜  MusicBrainz (enrichment) 🔜
+  Internet Archive (7 collections) ✅  Jamendo ✅  MusicBrainz (enrichment) 🔜
        │
        ▼
-[ Ingestion & Normalization Layer ]
+[ Ingestion & Normalization Layer ]  ← threaded, 10 workers/page, resumable
        │
        ▼
-[ AWS DynamoDB ] ─────────────────────> Meta-Index (~23k streamable CC tracks)
+[ AWS DynamoDB ] ─────────────────────> Meta-Index (CC-licensed, all streamable)
        │
        ▼
-[ AWS API Gateway + Lambda ] ─────────> Serverless REST API
+[ AWS API Gateway + Lambda ] ─────────> Serverless REST API (lang= filter live)
        │
        ▼
 [ GitHub Pages (Frontend) ] ──────────> PWA / SPA HTML5 Web Player
        │
        ├──> Casual Listeners     (radio, queue, Bluetooth, sleep timer)
-       ├──> Music Enthusiasts    (tag browse, infinite scroll, library, deep links)
-       └──> Content Creators     (CC filter, download, copy attribution string)
+       ├──> Music Enthusiasts    (tag browse, infinite scroll, library)
+       ├──> Audiobook / Lecture listeners  (content_type filter)
+       └──> Content Creators     (CC filter, attribution copy)
 ```
 
 ---
@@ -64,8 +73,7 @@ This document is the master engineering blueprint for the platform. It reflects 
   "track_number":     null,
   "genre":            "jazz",
   "tags":             ["jazz", "improvisation", "waltz"],
-  "mood":             null,
-  "bpm":              null,
+  "language":         "eng",
   "content_type":     "music",
   "duration_sec":     null,
   "cover_art_url":    null,
@@ -73,6 +81,7 @@ This document is the master engineering blueprint for the platform. It reflects 
   "source_url":       "https://archive.org/details/autojazz",
   "source_platform":  "internet_archive",
   "ia_collection":    "netlabels",
+  "format":           "mp3",
   "license_type":     "https://creativecommons.org/licenses/by-nc-nd/4.0/",
   "is_streamable":    true,
   "is_downloadable":  true,
@@ -84,7 +93,9 @@ This document is the master engineering blueprint for the platform. It reflects 
 }
 ```
 
-Future fields (not yet populated): `bpm`, `mood`, `track_number`, `cover_art_url`, `acoustid_fingerprint`, `musicbrainz_artist_id`.
+`language` is ISO 639-2 (`eng`, `fra`, `spa`, etc.) or absent for language-agnostic content (most music). The API `lang=eng` filter matches `language=eng` OR no language field.
+
+Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `musicbrainz_artist_id`.
 
 ---
 
@@ -100,8 +111,6 @@ Future fields (not yet populated): `bpm`, `mood`, `track_number`, `cover_art_url
 | `ContentTypeIndex` | `content_type` | `added_at` | `/tracks/search?type=` |
 | `DatasetIndex` | `dataset_version` | `added_at` | future dataset export |
 
-All GSIs use `PAY_PER_REQUEST` billing and `ProjectionType: ALL`.
-
 ---
 
 ## 3. Technical Roadmap
@@ -111,7 +120,11 @@ All GSIs use `PAY_PER_REQUEST` billing and `ProjectionType: ALL`.
 - Multi-source adapters — `ia_adapter.py`, `jamendo_adapter.py` live
 - Normalization & deduplication — `normalizer.py` + `deduplicator.py` live
 - `content_type` classification — `_detect_content_type()` in `ia_adapter.py`
-- `ALLOWED_PLATFORMS` in `normalizer.py` — gating for source quality control
+- `language` normalization — ISO 639-2, stored per record, null = language-agnostic
+- Threaded ingest — `normalize_batch()` with 10 workers, ~80 pages/hr
+- Resumable runs — `--start-page N` flag on `test_ingest_ia.py`
+- WAV + M4A fallback — `_pick_audio()` accepts WAV and M4A when no MP3 exists
+- `ALLOWED_PLATFORMS` gating — source quality control in `normalizer.py`
 
 ---
 
@@ -140,11 +153,10 @@ All GSIs use `PAY_PER_REQUEST` billing and `ProjectionType: ALL`.
 | GET | `/tracks/search?q=` | `music-search` | ✅ Live |
 | GET | `/tracks/search?genre=` | `music-search` | ✅ Live |
 | GET | `/tracks/search?type=` | `music-search` | ✅ Live |
+| GET | `/tracks/search?lang=` | `music-search` | ✅ Live — `eng` default, `all` disables filter |
 | GET | `/artists/search?q=` | `music-artists` | ✅ Live |
 | GET | `/albums/search?artist_id=` | `music-albums` | ✅ Live |
 | GET | `/albums/search?q=` | `music-albums` | ✅ Live |
-
-All live endpoints support `offset=` + `limit=` pagination and return `{ count, total, offset, query, results }`.
 
 #### Pending Endpoints
 
@@ -156,13 +168,12 @@ All live endpoints support `offset=` + `limit=` pagination and return `{ count, 
 
 ---
 
-### Phase 5: PWA & Cross-Device Playback ✅ Partially Complete
+### Phase 5: PWA & Cross-Device Playback ✅ Complete
 
-- **5.1** PWA manifest + service worker — ✅ live, cache `v3`, 206 fix applied
-- **5.2** Icons — ✅ real PNG icons, apple-touch-icon wired for home screen saves
-- **5.3** Media Session API — ✅ live (Bluetooth / lock screen / car stereo controls)
-- **5.4** AirPlay — ✅ zero-config via `<audio>` element
-- **5.5** Persistent queue — localStorage done, cross-device sync not planned
+- PWA manifest + service worker — cache `v3`, 206 fix applied
+- Real PNG icons — favicon, PWA splash, apple-touch-icon
+- Media Session API — Bluetooth / lock screen / car stereo controls
+- AirPlay — zero-config via `<audio>` element
 
 ---
 
@@ -170,7 +181,7 @@ All live endpoints support `offset=` + `limit=` pagination and return `{ count, 
 
 - **6.1** CloudWatch alarms — Lambda error rate, 5xx rate
 - **6.2** WAF rate limiting — 100 req/min per IP
-- **6.3** CORS locked to GitHub Pages origin in production (currently open)
+- **6.3** CORS locked to GitHub Pages origin (currently open `*`)
 
 ---
 
@@ -183,13 +194,17 @@ All live endpoints support `offset=` + `limit=` pagination and return `{ count, 
 | Repeat | ✅ Live | Restarts on `ended` |
 | Recently played | ✅ Live | `music_recent` localStorage, capped at 20 |
 | My Library (local) | ✅ Live | `music_library` localStorage, heart toggle |
-| Library view | ✅ Live | `views/library.js`, Play all, empty state |
-| Home view | ✅ Live | Filter chips, infinite scroll, now-playing indicator |
-| Infinite scroll | ✅ Live | `scroll.js`, `IntersectionObserver` |
+| Library view | ✅ Live | Play all, empty state |
+| Home view | ✅ Live | Filter chips (type + genre + mood), infinite scroll |
+| Infinite scroll | ✅ Live | `IntersectionObserver` sentinel |
 | Keyboard shortcuts | ✅ Live | Space, ←/→, N, P |
 | Media Session API | ✅ Live | Bluetooth / lock screen / car stereo |
-| Offline queue caching | 🔜 Pending | Pre-fetch next 2–3 tracks via Cache API |
-| Continue where left off | 🔜 Pending | 10s position write + Resume prompt |
+| Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
+| Cover art fallback | 🔜 Pending | Deterministic gradient per `album_id` when `cover_art_url` null |
+| Attribution "i" button | 🔜 Pending | Tap to see CC license + copy attribution string |
+| Download button | 🔜 Pending | `stream_url` with `download` attr where `is_downloadable: true` |
+| Continue where left off | 🔜 Pending | 10s position write + Resume prompt on open |
+| Offline queue caching | 🔜 Pending | Pre-fetch next 2–3 audio URLs via Cache API |
 | Crossfade | 🔜 Pending | Web Audio API, configurable duration |
 | Playback speed | 🔜 Pending | `playbackRate` control |
 | Settings view | 🔜 Pending | Crossfade, speed, cache management |
@@ -201,10 +216,10 @@ All live endpoints support `offset=` + `limit=` pagination and return `{ count, 
 ### Visual Design
 - Dark theme: `#111113` surface, `#1c1c1f` card, `#242428` raised
 - Brand accent: `#04AA6D` — header wordmark, active chips, eq bars, heart icons
-- Tailwind CDN 3.4.1 with custom color tokens (`surface`, `card`, `raised`, `accent`)
+- Tailwind CDN 3.4.1 with custom color tokens
 
 ### Layout
-- Fixed header: waveform wordmark + centered search + desktop nav
+- Fixed header: waveform wordmark + search + desktop nav + EN/All language toggle
 - Fixed player footer: desktop = single row, mobile = stacked
 - Mobile bottom nav: Home / Search / Library
 - Hamburger drawer (mobile): slides from right
@@ -212,28 +227,23 @@ All live endpoints support `offset=` + `limit=` pagination and return `{ count, 
 ### Player (`player.js`)
 - Shuffle, repeat, sleep timer (15/30/45/60/off with 10s fade)
 - Media Session API — Bluetooth / lock screen / hardware controls
-- `trackchange` custom event on every track start
-- Recently played written to `music_recent` localStorage on every `play()`
 - Audio error → skip to next (no silent failures)
+- Recently played written to localStorage on every `play()`
+
+### API (`api.js`)
+- `lang` state — `getLang()` / `setLang()`, persists to localStorage, defaults to `'eng'`
+- `_langParam()` appended to all search calls — `&lang=all` when set to all, empty otherwise
+- All search functions: `searchTracks`, `searchByGenre`, `searchByType`, `searchArtists`, `searchAlbums`
 
 ### Service Worker (`service-worker.js`)
 - Cache `v3` — shell assets cached on install
-- 206 Partial Content responses skipped (audio range requests not cached)
+- 206 Partial Content responses skipped in both `_cacheFirst` and `PRECACHE_AUDIO`
 - API calls always network-only
-- `PRECACHE_AUDIO` message handler for pre-fetching next tracks
-
-### Icons
-- `icon-192.png` — 192×192, browser favicon + PWA installer
-- `icon-512.png` — 512×512, PWA splash
-- `logo-180.png` — 180×180, `apple-touch-icon` for iOS/Android home screen saves
 
 ### Views
 - `views/home.js` — filter chips (type + genre + mood), infinite scroll, hearts, now-playing
 - `views/search.js` — infinite scroll, artist→album drill-down, Play all, hearts
 - `views/library.js` — saved tracks, Play all, heart removes, empty state
-
-### Legal Pages
-- `about.html`, `privacy.html`, `terms.html`, `licenses.html`
 
 ---
 
@@ -243,21 +253,33 @@ All live endpoints support `offset=` + `limit=` pagination and return `{ count, 
 |---|---|---|---|
 | Internet Archive — netlabels | ✅ Done | 4,734 | Modern CC netlabel releases |
 | Internet Archive — 78rpm | ✅ Done | 4,884 | Pre-1930s jazz/blues |
+| Internet Archive — opensource_audio | 🔄 Running | TBD | 3M item pool, CC-licensed |
+| Internet Archive — audio_music | 🔄 Running | TBD | 535k item pool, music-focused |
+| Internet Archive — georgeblood | 🔄 Running | TBD | 187k digitized 78rpm/shellac, pre-1928 PD |
+| Internet Archive — audio_bookspoetry | 🔄 Running | TBD | 75k audiobooks + poetry |
+| Internet Archive — librivoxaudio | 🔄 Running | TBD | 21k LibriVox public domain audiobooks |
 | Jamendo | ✅ Done | ~13,656 | 46 genre tags, all CC-licensed |
-| ccMixter | ❌ Removed | 0 | Content server 403s cross-origin — unplayable, poor UX |
-| Internet Archive (more collections) | 🔜 Next | — | Additional IA collections TBD |
+| ccMixter | ❌ Removed | 0 | Content server 403s cross-origin — unplayable |
+| Free Music Archive (FMA) | ❌ Dead end | 0 | API dead, hotlinking prohibited |
 | MusicBrainz | 🔜 Planned | — | Metadata enrichment only, not a track source |
-| Free Music Archive (FMA) | ❌ Dead end | 0 | API fully dead (404), hotlinking prohibited |
-
-**Total live records:** ~23,274 — all CC-licensed, all streamable
 
 ### Source Vetting Criteria
 A source is only ingested if:
 1. Files are directly streamable cross-origin (CORS headers present)
-2. CC license is confirmed per-track
+2. CC license or public domain confirmed per-track
 3. No hotlinking or scraping prohibition
 
-ccMixter and FMA both failed criterion 1 and are permanently excluded.
+### Ingest Commands (per collection, run in separate terminals)
+```
+python -u tests\test_ingest_ia.py opensource_audio
+python -u tests\test_ingest_ia.py audio_music
+python -u tests\test_ingest_ia.py georgeblood
+python -u tests\test_ingest_ia.py audio_bookspoetry
+python -u tests\test_ingest_ia.py librivoxaudio
+
+# Resume mid-run
+python -u tests\test_ingest_ia.py opensource_audio --start-page 150
+```
 
 ---
 
@@ -266,9 +288,10 @@ ccMixter and FMA both failed criterion 1 and are permanently excluded.
 | Issue | Status | Notes |
 |---|---|---|
 | Service worker 206 error | ✅ Fixed | Cache `v3` skips 206 responses |
-| ccMixter CORS 403 | ✅ Resolved | All ccMixter records wiped from DB |
-| Lambda total count cache | ⚠️ Known | `total` field caches for ~5min after large DB changes |
-| Cover art missing on most tracks | ⚠️ Known | `cover_art_url` null for IA + Jamendo majority — placeholder shown |
+| ccMixter CORS 403 | ✅ Resolved | All records wiped from DB |
+| Lambda total count cache | ⚠️ Known | `total` caches ~5min after large DB changes |
+| Cover art missing on most tracks | ⚠️ Known | `cover_art_url` null for most IA + Jamendo — placeholder shown |
+| Non-English content in results | ✅ Mitigated | `lang=eng` default filters to English + language-agnostic; EN/All toggle in header |
 
 ---
 
@@ -278,7 +301,7 @@ ccMixter and FMA both failed criterion 1 and are permanently excluded.
 music/
 ├── backend/
 │   ├── api/
-│   │   ├── search.py               # Lambda: GET /tracks/search
+│   │   ├── search.py               # Lambda: GET /tracks/search (q, genre, type, lang, offset)
 │   │   ├── artists.py              # Lambda: GET /artists/search?q=
 │   │   └── albums.py               # Lambda: GET /albums/search
 │   ├── db/
@@ -287,7 +310,7 @@ music/
 │   │   └── link_checker.py
 │   ├── ingestion/
 │   │   ├── base_adapter.py
-│   │   ├── ia_adapter.py           # Internet Archive
+│   │   ├── ia_adapter.py           # IA — 7 collections, threaded, language normalization
 │   │   ├── jamendo_adapter.py      # Jamendo — 46 tags, ~13,656 tracks
 │   │   ├── ccmixter_adapter.py     # ccMixter — kept for reference, not used
 │   │   ├── normalizer.py           # ALLOWED_PLATFORMS gating
@@ -295,8 +318,8 @@ music/
 │   └── requirements.txt
 │
 ├── frontend/                       # Deployed to gh-pages branch
-│   ├── index.html
-│   ├── manifest.json               # PWA: start_url /music/, 3 icon sizes
+│   ├── index.html                  # EN/All language toggle in header
+│   ├── manifest.json               # PWA: 3 icon sizes
 │   ├── service-worker.js           # Cache v3, 206 fix
 │   ├── about.html
 │   ├── privacy.html
@@ -305,10 +328,10 @@ music/
 │   ├── css/
 │   │   └── app.css
 │   ├── js/
-│   │   ├── app.js
+│   │   ├── app.js                  # Router, lang toggle wiring, keyboard shortcuts
 │   │   ├── player.js               # Media Session API, sleep timer, shuffle, repeat
 │   │   ├── queue.js
-│   │   ├── api.js
+│   │   ├── api.js                  # getLang/setLang, lang= param on all search calls
 │   │   ├── scroll.js
 │   │   ├── library.js
 │   │   ├── i18n/
@@ -318,10 +341,10 @@ music/
 │   │       ├── search.js
 │   │       └── library.js
 │   └── icons/
-│       ├── icon.png                # Source image (221×221)
+│       ├── icon.png                # Source (221×221)
 │       ├── icon-192.png            # PWA + favicon
 │       ├── icon-512.png            # PWA splash
-│       ├── logo.png                # Source image (224×224)
+│       ├── logo.png                # Source (224×224)
 │       └── logo-180.png            # apple-touch-icon
 │
 ├── infra/
@@ -332,11 +355,14 @@ music/
 │
 ├── scripts/
 │   ├── backfill_content_type.py
-│   ├── probe_jamendo_cc_total.py   # Confirmed 46 productive tags
+│   ├── probe_jamendo_cc_total.py
+│   ├── probe_ia_collections.py     # Item counts across all IA collections
+│   ├── probe_ia_new_collections.py # Sanity check one page per collection
 │   └── preview_collections.py
 │
 ├── tests/
-│   ├── test_ingest.py              # IA netlabels + 78rpm
+│   ├── test_ingest.py              # Legacy: IA netlabels + 78rpm
+│   ├── test_ingest_ia.py           # Current: all IA collections, threaded, resumable
 │   ├── test_ingest_jamendo.py      # Jamendo 46-tag sweep
 │   ├── test_ingest_ccmixter.py     # ccMixter — kept for reference, not run
 │   └── wipe_ccmixter.py            # Utility: wipe ccmixter records from DB
@@ -350,23 +376,25 @@ music/
 
 ## 8. Pending Items (Prioritized)
 
-### Next — Internet Archive additional collections
-- Identify productive IA collections beyond `netlabels` + `78rpm`
-- Candidates: `audio_music`, `georgeblood`, `librivoxaudio` (music only), netlabel sub-collections
-- All IA streams are CORS-friendly — confirmed working
+### Next — finish running IA collections
+- All 5 new collections running in parallel terminals
+- After completion: update live record count, commit results
+
+### High priority (UX)
+- Cover art fallback — deterministic gradient per `album_id` when `cover_art_url` is null
+- Attribution "i" button — tap on any track row to see CC license + copy attribution string
+- Download button — `stream_url` with `download` attribute where `is_downloadable: true`
 
 ### Medium priority
-- Cover art — deterministic gradient fallback per `album_id` when `cover_art_url` is null
-- Attribution display — "i" button on track rows surfacing `attribution_text` + `license_type`
-- Download button — `stream_url` with `download` attribute where `is_downloadable: true`
-- Continue where left off — 10s position write to localStorage + Resume prompt
+- Continue where left off — 10s position write to localStorage + Resume prompt on open
 - Offline queue caching — pre-fetch next 2–3 audio URLs via Cache API
+- `/stats` endpoint — total count, source breakdown, genre distribution
 
 ### Lower priority
-- `/tracks/{id}` single track endpoint
-- `/stats` endpoint — total count, source breakdown, genre distribution
 - Settings view — crossfade, playback speed, cache management
-- Crossfade — Web Audio API
+- Crossfade — Web Audio API, configurable duration
+- Playback speed — `playbackRate` control
+- `/tracks/{id}` single track endpoint
 - WAF + CORS hardening
 - MusicBrainz metadata enrichment (artist IDs, album art, BPM)
 
@@ -394,8 +422,9 @@ music/
 ## 10. Architectural Differentiators
 
 - **Zero-storage meta-index** — 0 GB audio stored, streams direct from source
-- **Source quality gating** — `ALLOWED_PLATFORMS` + CORS vetting before any source is ingested
-- **Unified cross-platform catalog** — single flat schema normalizes Internet Archive + Jamendo
-- **Decoupled serverless stack** — GitHub Pages + Lambda + DynamoDB, operates within free-tier limits
-- **Content-type classification** — separates music from podcasts/lectures/interviews at ingest
+- **Source quality gating** — CORS vetting + license check before any source is ingested
+- **Language-aware catalog** — ISO 639-2 per record, EN default filter, user-toggleable
+- **Content-type diversity** — music, audiobooks, lectures, podcasts all classified and filterable
+- **Unified cross-platform catalog** — single flat schema across Internet Archive + Jamendo
+- **Decoupled serverless stack** — GitHub Pages + Lambda + DynamoDB, free-tier friendly
 - **Preservation monitoring** — dead link health system tracks open archive integrity over time
