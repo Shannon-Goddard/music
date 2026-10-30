@@ -240,6 +240,7 @@ class WikimediaAdapter(BaseAdapter):
             'attribution_text': attribution,
             'health_status':    'active',
             'last_checked_at':  datetime.now(timezone.utc).isoformat(),
+            'last_updated_at':  datetime.now(timezone.utc).isoformat(),
             'added_at':         datetime.now(timezone.utc).isoformat(),
             'dataset_version':  'v1.0.0',
         }
