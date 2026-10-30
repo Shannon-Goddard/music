@@ -2,8 +2,12 @@ import './player.js';
 import { render as renderHome } from './views/home.js';
 import { render as renderSearch } from './views/search.js';
 import { render as renderLibrary } from './views/library.js';
-import { togglePlay } from './player.js';
+import { togglePlay, setSpeed, setCrossfade } from './player.js';
 import { getLang, setLang } from './api.js';
+
+// Expose player settings to inline scripts in index.html
+window._playerSetSpeed     = setSpeed;
+window._playerSetCrossfade = setCrossfade;
 
 const app = document.getElementById('app');
 

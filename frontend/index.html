@@ -80,6 +80,15 @@
       EN
     </button>
 
+    <!-- Settings button -->
+    <button onclick="openSettings()" aria-label="Settings" title="Settings"
+            class="shrink-0 p-1.5 text-white/40 hover:text-white transition">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+
     <!-- Hamburger button -->
     <button onclick="openMenu()" aria-label="Menu" class="flex flex-col gap-[5px] p-1.5 shrink-0 text-white/60 hover:text-white transition">
       <span class="block w-5 h-px bg-current rounded"></span>
@@ -397,6 +406,117 @@
 
   <!-- Hidden audio element -->
   <audio id="audio" preload="none" crossorigin="anonymous"></audio>
+
+  <!-- Settings sheet -->
+  <div id="settings-overlay" class="fixed inset-0 z-50 hidden" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px)" onclick="closeSettings()"></div>
+  <div id="settings-sheet"
+       class="fixed left-0 right-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300"
+       style="background:#1c1c1f;border-top:1px solid rgba(255,255,255,0.1);border-radius:1rem 1rem 0 0">
+    <div class="flex items-center justify-between px-5 pt-4 pb-3" style="border-bottom:1px solid rgba(255,255,255,0.07)">
+      <span class="text-sm font-semibold text-white/80">Settings</span>
+      <button onclick="closeSettings()" class="text-white/40 hover:text-white transition">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="px-5 py-4 space-y-6" style="padding-bottom:max(1.5rem,env(safe-area-inset-bottom))">
+
+      <!-- Playback speed -->
+      <div>
+        <p class="text-[11px] text-white/35 uppercase tracking-wider mb-3">Playback Speed</p>
+        <div id="speed-btns" class="flex gap-2 flex-wrap">
+          ${['0.5','0.75','1','1.25','1.5','2'].map(s =>
+            `<button data-speed="${s}" onclick="_setSpeed(${s})"
+                     class="speed-btn px-3 py-1.5 rounded-lg text-xs font-medium border transition"
+                     style="background:#242428;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">${s}x</button>`
+          ).join('')}
+        </div>
+      </div>
+
+      <!-- Crossfade -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-[11px] text-white/35 uppercase tracking-wider">Crossfade</p>
+          <button id="crossfade-toggle" onclick="_toggleCrossfade()"
+                  class="relative w-10 h-5 rounded-full transition-colors duration-200"
+                  style="background:rgba(255,255,255,0.15)">
+            <span id="crossfade-thumb" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform duration-200"></span>
+          </button>
+        </div>
+        <div id="crossfade-dur-row" class="flex items-center gap-3">
+          <input id="crossfade-dur" type="range" min="2" max="12" step="1" value="5"
+                 oninput="_setCrossfadeDur(this.value)"
+                 class="flex-1 h-1 cursor-pointer rounded-full" />
+          <span id="crossfade-dur-label" class="text-xs text-white/40 tabular-nums w-8">5s</span>
+        </div>
+      </div>
+
+      <!-- Cache -->
+      <div>
+        <p class="text-[11px] text-white/35 uppercase tracking-wider mb-3">Cache</p>
+        <button onclick="_clearCache()"
+                class="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg transition"
+                style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Clear audio cache
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function openSettings() {
+      _syncSettingsUI();
+      document.getElementById('settings-overlay').classList.remove('hidden');
+      document.getElementById('settings-sheet').classList.remove('translate-y-full');
+    }
+    function closeSettings() {
+      document.getElementById('settings-overlay').classList.add('hidden');
+      document.getElementById('settings-sheet').classList.add('translate-y-full');
+    }
+    function _syncSettingsUI() {
+      const speed = parseFloat(localStorage.getItem('music_speed') || '1');
+      document.querySelectorAll('.speed-btn').forEach(b => {
+        const active = parseFloat(b.dataset.speed) === speed;
+        b.style.background     = active ? 'rgba(4,170,109,0.15)' : '#242428';
+        b.style.borderColor    = active ? 'rgba(4,170,109,0.4)'  : 'rgba(255,255,255,0.1)';
+        b.style.color          = active ? '#04AA6D'               : 'rgba(255,255,255,0.5)';
+      });
+      const cfOn  = localStorage.getItem('music_crossfade') === 'true';
+      const cfDur = parseInt(localStorage.getItem('music_crossfade_dur') || '5');
+      const toggle = document.getElementById('crossfade-toggle');
+      const thumb  = document.getElementById('crossfade-thumb');
+      toggle.style.background = cfOn ? '#04AA6D' : 'rgba(255,255,255,0.15)';
+      thumb.style.transform   = cfOn ? 'translateX(1.25rem)' : 'translateX(0)';
+      document.getElementById('crossfade-dur').value = cfDur;
+      document.getElementById('crossfade-dur-label').textContent = cfDur + 's';
+    }
+    function _setSpeed(rate) {
+      if (window._playerSetSpeed) window._playerSetSpeed(rate);
+      _syncSettingsUI();
+    }
+    function _toggleCrossfade() {
+      const cfOn = localStorage.getItem('music_crossfade') === 'true';
+      const dur  = parseInt(localStorage.getItem('music_crossfade_dur') || '5');
+      if (window._playerSetCrossfade) window._playerSetCrossfade(!cfOn, dur);
+      _syncSettingsUI();
+    }
+    function _setCrossfadeDur(val) {
+      const cfOn = localStorage.getItem('music_crossfade') === 'true';
+      if (window._playerSetCrossfade) window._playerSetCrossfade(cfOn, parseInt(val));
+      document.getElementById('crossfade-dur-label').textContent = val + 's';
+    }
+    function _clearCache() {
+      caches.keys().then(keys => {
+        const audio = keys.filter(k => k.includes('audio'));
+        Promise.all(audio.map(k => caches.delete(k))).then(() => {
+          const btn = event.target.closest('button');
+          btn.textContent = 'Cleared!';
+          setTimeout(() => { btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Clear audio cache`; }, 2000);
+        });
+      });
+    }
+  </script>
 
   <!-- JS modules -->
   <script type="module" src="/music/js/app.js"></script>

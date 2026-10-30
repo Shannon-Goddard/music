@@ -47,7 +47,9 @@ let positionInterval = null;
 export function play(track) {
   if (!track?.stream_url) return;
   audio.src = track.stream_url;
+  audio.playbackRate = _speed;
   audio.play().catch(e => console.warn('Playback error:', e));
+  if (_crossfadeEnabled && _gainNode) _resetGain();
   _updateUI(track);
   _updateMediaSession(track);
   _saveRecent(track);
@@ -75,12 +77,9 @@ export function playAt(track, positionSec) {
   }, { once: true });
 }
 
-
-  if (audio.paused) {
-    audio.play();
-  } else {
-    audio.pause();
-  }
+export function togglePlay() {
+  if (audio.paused) audio.play();
+  else audio.pause();
 }
 
 export function playQueue(tracks, startIndex = 0) {
@@ -189,6 +188,15 @@ btnPrevM.addEventListener('click', _onPrev);
 
 function _onNext() {
   if (repeatOn) { audio.currentTime = 0; audio.play(); return; }
+  if (_crossfadeEnabled) {
+    _getAudioCtx();
+    _startCrossfadeOut();
+    setTimeout(() => {
+      const track = shuffleOn ? Queue.random() : Queue.next();
+      if (track) { play(track); _resetGain(); }
+    }, _crossfadeDuration * 1000);
+    return;
+  }
   const track = shuffleOn ? Queue.random() : Queue.next();
   if (track) play(track);
 }
@@ -228,6 +236,61 @@ function _precacheNext() {
   if (urls.length) {
     navigator.serviceWorker.controller.postMessage({ type: 'PRECACHE_AUDIO', urls });
   }
+}
+
+// ── Playback speed ───────────────────────────────────────
+
+let _speed = parseFloat(localStorage.getItem('music_speed') || '1');
+audio.playbackRate = _speed;
+
+export function setSpeed(rate) {
+  _speed = rate;
+  audio.playbackRate = rate;
+  localStorage.setItem('music_speed', rate);
+}
+export function getSpeed() { return _speed; }
+
+// ── Crossfade (Web Audio API) ─────────────────────────────
+
+let _crossfadeEnabled  = localStorage.getItem('music_crossfade') === 'true';
+let _crossfadeDuration = parseInt(localStorage.getItem('music_crossfade_dur') || '5');
+let _audioCtx = null;
+let _gainNode = null;
+
+function _getAudioCtx() {
+  if (!_audioCtx) {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = _audioCtx.createMediaElementSource(audio);
+    _gainNode = _audioCtx.createGain();
+    src.connect(_gainNode);
+    _gainNode.connect(_audioCtx.destination);
+  }
+  return _audioCtx;
+}
+
+export function setCrossfade(enabled, duration) {
+  _crossfadeEnabled  = enabled;
+  _crossfadeDuration = duration;
+  localStorage.setItem('music_crossfade', enabled);
+  localStorage.setItem('music_crossfade_dur', duration);
+}
+export function getCrossfade() { return { enabled: _crossfadeEnabled, duration: _crossfadeDuration }; }
+
+function _startCrossfadeOut() {
+  if (!_crossfadeEnabled || !_gainNode) return;
+  const ctx  = _getAudioCtx();
+  const dur  = _crossfadeDuration;
+  _gainNode.gain.cancelScheduledValues(ctx.currentTime);
+  _gainNode.gain.setValueAtTime(_gainNode.gain.value, ctx.currentTime);
+  _gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + dur);
+}
+
+function _resetGain() {
+  if (!_gainNode) return;
+  const ctx = _getAudioCtx();
+  _gainNode.gain.cancelScheduledValues(ctx.currentTime);
+  _gainNode.gain.setValueAtTime(0, ctx.currentTime);
+  _gainNode.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.3);
 }
 
 // ── Sleep Timer ───────────────────────────────────────────
