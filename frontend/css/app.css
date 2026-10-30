@@ -82,6 +82,9 @@ input[type="range"] {
 body.player-visible #bottom-nav {
   bottom: 7.5rem;
 }
+body.player-visible #app {
+  padding-bottom: 14rem;
+}
 
 /* ── Bottom nav safe area padding (iOS home indicator) ── */
 #bottom-nav {
@@ -224,12 +227,25 @@ body.player-visible #back-to-top { bottom: 13rem; }
   position: sticky;
   top: 3.5rem;
   z-index: 30;
-  background: rgba(17,17,19,0.92);
+  background: rgba(17,17,19,0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 1rem;
   display: none;
   align-items: center;
   justify-content: space-between;
-  margin: 0 -1rem 0.75rem;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  margin-bottom: 0.75rem;
+}
+/* Make #app the scroll container so sticky works */
+#app {
+  overflow-y: auto;
+  height: calc(100vh - 3.5rem);
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  padding-bottom: 7rem;
+}
+body {
+  overflow: hidden;
 }
