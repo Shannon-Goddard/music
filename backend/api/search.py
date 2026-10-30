@@ -109,12 +109,25 @@ def _paginate_query(index: str, key_expr, filter_expr, offset: int, limit: int) 
     return page, total
 
 
-def _search_by_content_type(content_type: str, offset: int, limit: int) -> tuple[list, int]:
+def _lang_filter(lang: str):
+    """Return a filter expression for language.
+    'eng' matches records with language=eng OR no language field (music is language-agnostic).
+    Any other code matches only that language.
+    """
+    if lang == "eng":
+        return Attr("language").eq("eng") | Attr("language").not_exists()
+    return Attr("language").eq(lang)
+
+
+def _search_by_content_type(content_type: str, lang: str, offset: int, limit: int) -> tuple[list, int]:
     try:
+        lang_expr = _lang_filter(lang) if lang else None
+        base = Attr("health_status").eq("active")
+        filter_expr = (base & lang_expr) if lang_expr else base
         return _paginate_query(
             "ContentTypeIndex",
             Key("content_type").eq(content_type),
-            Attr("health_status").eq("active"),
+            filter_expr,
             offset, limit,
         )
     except ClientError as e:
@@ -122,12 +135,15 @@ def _search_by_content_type(content_type: str, offset: int, limit: int) -> tuple
         return [], 0
 
 
-def _search_by_genre(genre: str, offset: int, limit: int) -> tuple[list, int]:
+def _search_by_genre(genre: str, lang: str, offset: int, limit: int) -> tuple[list, int]:
+    lang_expr = _lang_filter(lang) if lang else None
+    base = Attr("health_status").eq("active")
+    filter_expr = (base & lang_expr) if lang_expr else base
     try:
         items, total = _paginate_query(
             "GenreIndex",
             Key("genre").eq(genre),
-            Attr("health_status").eq("active"),
+            filter_expr,
             offset, limit,
         )
         if total:
@@ -135,10 +151,9 @@ def _search_by_genre(genre: str, offset: int, limit: int) -> tuple[list, int]:
     except ClientError as e:
         logger.error("search_by_genre GSI error: %s", e.response["Error"]["Message"])
 
-    # Fallback: case-insensitive scan
     try:
         return _paginate_scan(
-            Attr("health_status").eq("active") & Attr("genre").contains(genre),
+            filter_expr & Attr("genre").contains(genre),
             offset, limit,
         )
     except ClientError as e:
@@ -146,11 +161,14 @@ def _search_by_genre(genre: str, offset: int, limit: int) -> tuple[list, int]:
         return [], 0
 
 
-def _search_by_text(query: str, offset: int, limit: int) -> tuple[list, int]:
+def _search_by_text(query: str, lang: str, offset: int, limit: int) -> tuple[list, int]:
     q = query.lower()
+    lang_expr = _lang_filter(lang) if lang else None
+    base = Attr("health_status").eq("active")
+    filter_expr = (base & lang_expr) if lang_expr else base
     try:
         return _paginate_scan(
-            Attr("health_status").eq("active") & (
+            filter_expr & (
                 Attr("title").contains(query)       |
                 Attr("artist_name").contains(query) |
                 Attr("album_title").contains(query) |
@@ -183,6 +201,8 @@ def _format_track(item: dict) -> dict:
         "license_type":    item.get("license_type"),
         "is_downloadable": item.get("is_downloadable", False),
         "attribution_text":item.get("attribution_text"),
+        "language":        item.get("language"),
+        "source_platform": item.get("source_platform"),
     }
 
 
@@ -191,6 +211,10 @@ def handler(event, context):
     query        = (params.get("q")    or "").strip()
     genre        = (params.get("genre") or "").strip()
     content_type = (params.get("type") or "").strip()
+    # lang= defaults to 'eng' (English + language-agnostic music)
+    # pass lang=all to disable the filter
+    lang_param   = (params.get("lang") or "eng").strip()
+    lang         = "" if lang_param == "all" else lang_param
 
     try:
         limit  = min(int(params.get("limit",  20)), 100)
@@ -202,11 +226,11 @@ def handler(event, context):
         return _response(400, {"error": "BAD_REQUEST", "message": "Provide q=, genre=, or type= parameter"})
 
     if content_type:
-        items, total = _search_by_content_type(content_type, offset, limit)
+        items, total = _search_by_content_type(content_type, lang, offset, limit)
     elif genre:
-        items, total = _search_by_genre(genre, offset, limit)
+        items, total = _search_by_genre(genre, lang, offset, limit)
     else:
-        items, total = _search_by_text(query, offset, limit)
+        items, total = _search_by_text(query, lang, offset, limit)
 
     tracks = [_format_track(item) for item in items]
 

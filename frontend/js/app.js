@@ -3,6 +3,7 @@ import { render as renderHome } from './views/home.js';
 import { render as renderSearch } from './views/search.js';
 import { render as renderLibrary } from './views/library.js';
 import { togglePlay } from './player.js';
+import { getLang, setLang } from './api.js';
 
 const app = document.getElementById('app');
 
@@ -99,6 +100,25 @@ document.addEventListener('trackchange', e => {
     row.classList.toggle('now-playing', row.dataset.trackId === e.detail.track_id);
   });
 });
+
+// ── Language toggle ───────────────────────────────────────
+
+const langBtn = document.getElementById('lang-toggle');
+
+function _updateLangBtn() {
+  const isEng = getLang() === 'eng';
+  langBtn.textContent = isEng ? 'EN' : 'All';
+  langBtn.style.color = isEng ? 'rgba(255,255,255,0.5)' : '#04AA6D';
+  langBtn.style.borderColor = isEng ? 'rgba(255,255,255,0.15)' : 'rgba(4,170,109,0.5)';
+}
+
+langBtn.addEventListener('click', () => {
+  setLang(getLang() === 'eng' ? 'all' : 'eng');
+  _updateLangBtn();
+  route();
+});
+
+_updateLangBtn();
 
 // ── Boot ──────────────────────────────────────────────────
 
