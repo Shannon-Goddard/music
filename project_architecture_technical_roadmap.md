@@ -27,7 +27,7 @@ This document is the master engineering blueprint for the platform. It reflects 
 | Lambda memory | ✅ 1024MB | All 3 Lambdas, 30s timeout |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
 | Icons | ✅ Done | Real PNG icons, apple-touch-icon for home screen saves |
-| Service worker | ✅ Fixed | Cache `v3`, 206 Partial Content responses skipped |
+| Service worker | ✅ Fixed | Cache `v4`, 206 Partial Content responses skipped |
 | Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
 
 **API base URL:** `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1`
@@ -170,7 +170,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 
 ### Phase 5: PWA & Cross-Device Playback ✅ Complete
 
-- PWA manifest + service worker — cache `v3`, 206 fix applied
+- PWA manifest + service worker — cache `v4`, 206 fix applied
 - Real PNG icons — favicon, PWA splash, apple-touch-icon
 - Media Session API — Bluetooth / lock screen / car stereo controls
 - AirPlay — zero-config via `<audio>` element
@@ -200,7 +200,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Keyboard shortcuts | ✅ Live | Space, ←/→, N, P |
 | Media Session API | ✅ Live | Bluetooth / lock screen / car stereo |
 | Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
-| Cover art fallback | 🔜 Pending | Deterministic gradient per `album_id` when `cover_art_url` null |
+| Cover art fallback | ✅ Live | Deterministic gradient per `album_id` — 12 palette pairs, hash-derived angle, note/eq-bars overlay |
 | Attribution "i" button | 🔜 Pending | Tap to see CC license + copy attribution string |
 | Download button | 🔜 Pending | `stream_url` with `download` attr where `is_downloadable: true` |
 | Continue where left off | 🔜 Pending | 10s position write + Resume prompt on open |
@@ -236,7 +236,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 - All search functions: `searchTracks`, `searchByGenre`, `searchByType`, `searchArtists`, `searchAlbums`
 
 ### Service Worker (`service-worker.js`)
-- Cache `v3` — shell assets cached on install
+- Cache `v4` — shell assets cached on install, includes `utils.js`
 - 206 Partial Content responses skipped in both `_cacheFirst` and `PRECACHE_AUDIO`
 - API calls always network-only
 
@@ -290,7 +290,7 @@ python -u tests\test_ingest_ia.py opensource_audio --start-page 150
 | Service worker 206 error | ✅ Fixed | Cache `v3` skips 206 responses |
 | ccMixter CORS 403 | ✅ Resolved | All records wiped from DB |
 | Lambda total count cache | ⚠️ Known | `total` caches ~5min after large DB changes |
-| Cover art missing on most tracks | ⚠️ Known | `cover_art_url` null for most IA + Jamendo — placeholder shown |
+| Cover art missing on most tracks | ✅ Fixed | Deterministic gradient fallback via `utils.js` — same track always same gradient |
 | Non-English content in results | ✅ Mitigated | `lang=eng` default filters to English + language-agnostic; EN/All toggle in header |
 
 ---
@@ -332,6 +332,7 @@ music/
 │   │   ├── player.js               # Media Session API, sleep timer, shuffle, repeat
 │   │   ├── queue.js
 │   │   ├── api.js                  # getLang/setLang, lang= param on all search calls
+│   │   ├── utils.js                # coverGradient(id), artThumb(track) — shared across views
 │   │   ├── scroll.js
 │   │   ├── library.js
 │   │   ├── i18n/
@@ -381,7 +382,6 @@ music/
 - After completion: update live record count, commit results
 
 ### High priority (UX)
-- Cover art fallback — deterministic gradient per `album_id` when `cover_art_url` is null
 - Attribution "i" button — tap on any track row to see CC license + copy attribution string
 - Download button — `stream_url` with `download` attribute where `is_downloadable: true`
 
