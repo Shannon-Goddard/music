@@ -168,8 +168,8 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/tracks/{id}` | Single track detail |
-| GET | `/radio?genre=` | Randomized active tracks by genre |
+| GET | `/tracks/{id}` | `music-track` | ✅ Live — single track by `track_id`, includes all MB fields |
+| GET | `/radio?genre=` | pending | Randomized active tracks by genre |
 
 ---
 
@@ -182,11 +182,11 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 
 ---
 
-### Phase 6: Production Hardening 🔜 Pending
+### Phase 6: Production Hardening ✅ Complete
 
 - **6.1** CloudWatch alarms — Lambda error rate, 5xx rate
-- **6.2** WAF rate limiting — 100 req/min per IP
-- **6.3** CORS locked to GitHub Pages origin (currently open `*`)
+- **6.2** WAF rate limiting — 100 req/5min per IP, WebACL `music-api-waf` attached to stage `v1`
+- **6.3** CORS locked to `https://shannon-goddard.github.io` on all 5 Lambdas
 
 ---
 
@@ -210,9 +210,9 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Download button | ✅ Live | Inside attribution sheet, `stream_url` with `download` attr where `is_downloadable: true` |
 | Continue where left off | ✅ Live | 10s position write, resume bar shows track + timestamp, `playAt()` seeks on resume |
 | Offline queue caching | ✅ Live | Next 2 track URLs pre-fetched via SW `PRECACHE_AUDIO` on every play |
-| Crossfade | 🔜 Pending | Web Audio API, configurable duration |
-| Playback speed | 🔜 Pending | `playbackRate` control |
-| Settings view | 🔜 Pending | Crossfade, speed, cache management |
+| Crossfade | ✅ Live | Web Audio API GainNode, 2–12s configurable, toggle + slider in settings |
+| Playback speed | ✅ Live | `playbackRate` 0.5–2x, persists to localStorage, in settings |
+| Settings view | ✅ Live | Speed picker, crossfade toggle+slider, audio cache clear |
 
 ---
 
@@ -402,13 +402,10 @@ music/
 - Quick script keyed off `ia_collection` would reclassify most without touching the API
 
 ### Pending (lower priority)
-- Settings view — crossfade, playback speed, cache management
-- Crossfade — Web Audio API, configurable duration
-- Playback speed — `playbackRate` control
-- `/tracks/{id}` single track endpoint
+- MusicBrainz metadata enrichment — backfill script running, cover art + artist IDs + genre tags
 - `/radio?genre=` randomized endpoint
-- WAF + CORS hardening
-- MusicBrainz metadata enrichment (artist IDs, album art, BPM)
+- CloudWatch alarms — Lambda error rate, 5xx rate
+- Settings view — ✅ Live (speed, crossfade, cache clear)
 
 ---
 
@@ -423,7 +420,10 @@ music/
 | Lambda — artists | `music-artists` (1024MB, 30s) |
 | Lambda — albums | `music-albums` (1024MB, 30s) |
 | Lambda — stats | `music-stats` (1024MB, 30s) |
+| Lambda — track | `music-track` (512MB, 10s) |
 | Lambda role | `arn:aws:iam::170377509849:role/music-lambda-role` |
+| WAF WebACL | `music-api-waf` — 100 req/5min per IP, attached to stage `v1` |
+| CORS origin | `https://shannon-goddard.github.io` (all 5 Lambdas) |
 | API Gateway ID | `9jxmxtjybb` |
 | API base URL | `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1` |
 | Jamendo credentials | Secrets Manager `music/jamendo` |
