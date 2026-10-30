@@ -69,7 +69,7 @@ def _get_table():
     return _table
 
 
-def _scan_needs_art(content_type_filter: str, start_key: dict | None) -> tuple[list, dict | None]:
+def _scan_needs_art(content_type_filter: str, collection_filter: str, start_key: dict | None) -> tuple[list, dict | None]:
     """Return one page of records missing cover_art_url."""
     kwargs = {
         'FilterExpression': Attr('cover_art_url').not_exists() & Attr('health_status').eq('active'),
@@ -80,6 +80,8 @@ def _scan_needs_art(content_type_filter: str, start_key: dict | None) -> tuple[l
     }
     if content_type_filter != 'all':
         kwargs['FilterExpression'] &= Attr('content_type').eq(content_type_filter)
+    if collection_filter:
+        kwargs['FilterExpression'] &= Attr('ia_collection').eq(collection_filter)
     if start_key:
         kwargs['ExclusiveStartKey'] = start_key
     try:
@@ -260,14 +262,15 @@ def enrich_record(record: dict, dry_run: bool) -> str:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--type',    default='music', help='content_type filter (default: music, use all for everything)')
-    parser.add_argument('--limit',   type=int, default=0, help='max records to process (0 = unlimited)')
-    parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--type',       default='music', help='content_type filter (default: music, use all for everything)')
+    parser.add_argument('--collection',  default='',      help='ia_collection filter e.g. georgeblood, 78rpm (default: all collections)')
+    parser.add_argument('--limit',       type=int, default=0, help='max records to process (0 = unlimited)')
+    parser.add_argument('--dry-run',     action='store_true')
     args = parser.parse_args()
 
     logger.info('=== MusicBrainz backfill start ===')
-    logger.info('type=%s  limit=%s  dry_run=%s  workers=%d',
-                args.type, args.limit or 'unlimited', args.dry_run, WORKERS)
+    logger.info('type=%s  collection=%s  limit=%s  dry_run=%s  workers=%d',
+                args.type, args.collection or 'all', args.limit or 'unlimited', args.dry_run, WORKERS)
 
     # Load resume token if exists
     start_key = None
@@ -282,7 +285,7 @@ def main():
     hits = misses = partials = skips = errors = total = 0
 
     while True:
-        page, next_key = _scan_needs_art(args.type, start_key)
+        page, next_key = _scan_needs_art(args.type, args.collection, start_key)
         if not page:
             break
 
