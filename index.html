@@ -99,7 +99,7 @@
 
   <!-- ── Hamburger drawer ───────────────────────────────── -->
   <div id="menuOverlay" class="fixed inset-0 z-50 hidden" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)" onclick="closeMenu()"></div>
-  <div id="menuDrawer" class="fixed top-0 right-0 h-full w-64 z-50 flex flex-col shadow-2xl transform translate-x-full transition-transform duration-300"
+  <div id="menuDrawer" class="fixed top-0 right-0 h-full w-64 z-50 flex flex-col shadow-2xl transform translate-x-full transition-transform duration-300 pointer-events-none"
        style="background:#1c1c1f;border-left:1px solid rgba(255,255,255,0.08)">
 
     <!-- Drawer header -->
@@ -157,11 +157,15 @@
   <script>
     function openMenu() {
       document.getElementById('menuOverlay').classList.remove('hidden');
-      document.getElementById('menuDrawer').classList.remove('translate-x-full');
+      const d = document.getElementById('menuDrawer');
+      d.classList.remove('translate-x-full');
+      d.classList.remove('pointer-events-none');
     }
     function closeMenu() {
       document.getElementById('menuOverlay').classList.add('hidden');
-      document.getElementById('menuDrawer').classList.add('translate-x-full');
+      const d = document.getElementById('menuDrawer');
+      d.classList.add('translate-x-full');
+      d.classList.add('pointer-events-none');
     }
   </script>
 
@@ -326,7 +330,7 @@
   <!-- Attribution / Info modal -->
   <div id="info-overlay" class="fixed inset-0 z-50 hidden" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px)" onclick="closeInfo()"></div>
   <div id="info-sheet"
-       class="fixed left-0 right-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300"
+       class="fixed left-0 right-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 pointer-events-none"
        style="background:#1c1c1f;border-top:1px solid rgba(255,255,255,0.1);border-radius:1rem 1rem 0 0;max-height:80vh;overflow-y:auto">
     <div class="flex items-center justify-between px-5 pt-4 pb-3" style="border-bottom:1px solid rgba(255,255,255,0.07)">
       <span class="text-sm font-semibold text-white/80">Track Info</span>
@@ -339,6 +343,7 @@
 
   <script>
     function openInfo(encoded) {
+      document.getElementById('info-sheet').classList.remove('pointer-events-none');
       const t = JSON.parse(decodeURIComponent(encoded));
       const body = document.getElementById('info-body');
       const licenseLabel = t.license_type
@@ -392,7 +397,9 @@
     }
     function closeInfo() {
       document.getElementById('info-overlay').classList.add('hidden');
-      document.getElementById('info-sheet').classList.add('translate-y-full');
+      const s = document.getElementById('info-sheet');
+      s.classList.add('translate-y-full');
+      s.classList.add('pointer-events-none');
     }
     function _copyAttribution(encoded) {
       navigator.clipboard?.writeText(decodeURIComponent(encoded)).then(() => {
@@ -410,7 +417,7 @@
   <!-- Settings sheet -->
   <div id="settings-overlay" class="fixed inset-0 z-50 hidden" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px)" onclick="closeSettings()"></div>
   <div id="settings-sheet"
-       class="fixed left-0 right-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300"
+       class="fixed left-0 right-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 pointer-events-none"
        style="background:#1c1c1f;border-top:1px solid rgba(255,255,255,0.1);border-radius:1rem 1rem 0 0">
     <div class="flex items-center justify-between px-5 pt-4 pb-3" style="border-bottom:1px solid rgba(255,255,255,0.07)">
       <span class="text-sm font-semibold text-white/80">Settings</span>
@@ -468,11 +475,15 @@
     function openSettings() {
       _syncSettingsUI();
       document.getElementById('settings-overlay').classList.remove('hidden');
-      document.getElementById('settings-sheet').classList.remove('translate-y-full');
+      const s = document.getElementById('settings-sheet');
+      s.classList.remove('translate-y-full');
+      s.classList.remove('pointer-events-none');
     }
     function closeSettings() {
       document.getElementById('settings-overlay').classList.add('hidden');
-      document.getElementById('settings-sheet').classList.add('translate-y-full');
+      const s = document.getElementById('settings-sheet');
+      s.classList.add('translate-y-full');
+      s.classList.add('pointer-events-none');
     }
     function _syncSettingsUI() {
       const speed = parseFloat(localStorage.getItem('music_speed') || '1');
