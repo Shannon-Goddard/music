@@ -1,4 +1,4 @@
-const CACHE_NAME = 'music-shell-v3';
+const CACHE_NAME = 'music-shell-v4';
 const AUDIO_CACHE = 'music-audio-v1';
 const BASE = '/music';
 
@@ -12,6 +12,7 @@ const SHELL_ASSETS = [
   `${BASE}/js/scroll.js`,
   `${BASE}/js/library.js`,
   `${BASE}/js/api.js`,
+  `${BASE}/js/utils.js`,
   `${BASE}/js/i18n/en.js`,
   `${BASE}/js/views/home.js`,
   `${BASE}/js/views/search.js`,

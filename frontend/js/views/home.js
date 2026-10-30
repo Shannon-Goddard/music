@@ -3,6 +3,7 @@ import { InfiniteScroll } from '../scroll.js';
 import { playQueue } from '../player.js';
 import { loadSession } from '../queue.js';
 import { isSaved, toggleSaved } from '../library.js';
+import { artThumb, coverGradient } from '../utils.js';
 import en from '../i18n/en.js';
 
 const GENRES = ['Electronic', 'Rock', 'Ambient', 'Experimental', 'Blues', 'Jazz', 'Industrial', 'Classical', 'Hip-Hop', 'Folk'];
@@ -216,12 +217,13 @@ function _chip({ label, attr, value }) {
 function _miniCard(track, index, type) {
   const art = track.cover_art_url
     ? `<img src="${_esc(track.cover_art_url)}" class="w-full h-full object-cover" alt="" />`
-    : `<div class="w-full h-full bg-raised flex items-center justify-center text-white/20">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+    : `<div class="w-full h-full flex items-center justify-center"
+            style="background:${coverGradient(track.album_id || track.track_id)}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(255,255,255,0.25)"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
        </div>`;
   return `
     <button data-${type}="${index}" class="card flex-shrink-0 w-36 text-left">
-      <div class="w-36 h-36 rounded-lg overflow-hidden mb-2" style="background:#1c1c1f">${art}</div>
+      <div class="w-36 h-36 rounded-lg overflow-hidden mb-2">${art}</div>
       <p class="text-xs font-medium truncate">${_esc(track.title)}</p>
       <p class="text-xs text-white/40 truncate">${_esc(track.artist_name)}</p>
     </button>
@@ -230,18 +232,12 @@ function _miniCard(track, index, type) {
 
 function _trackRow(track, index) {
   const duration = track.duration_sec ? _fmt(track.duration_sec) : '';
-  const art = track.cover_art_url
-    ? `<img src="${_esc(track.cover_art_url)}" class="w-10 h-10 rounded object-cover" alt="" />`
-    : `<div class="w-10 h-10 rounded bg-raised flex items-center justify-center text-white/20 shrink-0 track-art-placeholder">
-        <svg class="note-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
-        <div class="eq-bars hidden"><span></span><span></span><span></span></div>
-       </div>`;
   const saved = _isSaved(track.track_id);
   return `
     <div data-index="${index}" data-track-id="${_esc(track.track_id)}"
          class="card flex items-center gap-3 p-3 rounded-lg bg-card cursor-pointer hover:bg-raised transition"
          style="border:1px solid rgba(255,255,255,0.06)">
-      <div class="shrink-0">${art}</div>
+      <div class="shrink-0">${artThumb(track)}</div>
       <div class="flex-1 min-w-0">
         <p class="text-sm font-medium truncate">${_esc(track.title)}</p>
         <p class="text-xs text-white/40 truncate">${_esc(track.artist_name)}</p>
