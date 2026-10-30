@@ -202,6 +202,12 @@ function _currentTracks(artistMap, activeArtist, activeAlbum, allTracks) {
 function _trackRow(track, index) {
   const duration = track.duration_sec ? _fmt(track.duration_sec) : '';
   const saved = _isSaved(track.track_id);
+  const info = encodeURIComponent(JSON.stringify({
+    title: track.title, artist_name: track.artist_name,
+    license_type: track.license_type, attribution_text: track.attribution_text,
+    source_url: track.source_url, stream_url: track.stream_url,
+    is_downloadable: track.is_downloadable,
+  }));
   return `
     <div data-index="${index}" data-track-id="${_esc(track.track_id)}"
          class="card flex items-center gap-3 p-3 rounded-lg bg-card cursor-pointer hover:bg-raised transition"
@@ -212,6 +218,10 @@ function _trackRow(track, index) {
         <p class="text-xs text-white/40 truncate">${_esc(track.album_title || '')}</p>
       </div>
       <span class="text-xs text-white/25 tabular-nums shrink-0">${duration}</span>
+      <button data-info="${info}" aria-label="Track info" onclick="event.stopPropagation();openInfo(this.dataset.info)"
+              class="shrink-0 p-1 text-white/20 hover:text-white/60 transition">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      </button>
       <button data-save="${_esc(track.track_id)}" aria-label="Save to library"
               class="shrink-0 p-1 transition hover:scale-110 ${saved ? 'text-accent' : 'text-white/20 hover:text-white/60'}">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

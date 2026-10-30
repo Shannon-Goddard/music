@@ -222,7 +222,11 @@ body.paused .eq-bars span {
 #back-to-top:hover { color: #04AA6D; border-color: rgba(4,170,109,0.4); }
 body.player-visible #back-to-top { bottom: 13rem; }
 
-/* ── Sticky count bar ───────────────────────────────── */
+/* ── Info bottom sheet ──────────────────────────────── */
+#info-sheet {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
 #sticky-count-bar {
   position: sticky;
   top: 3.5rem;

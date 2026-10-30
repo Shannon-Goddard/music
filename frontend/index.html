@@ -314,6 +314,87 @@
     </svg>
   </button>
 
+  <!-- Attribution / Info modal -->
+  <div id="info-overlay" class="fixed inset-0 z-50 hidden" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px)" onclick="closeInfo()"></div>
+  <div id="info-sheet"
+       class="fixed left-0 right-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300"
+       style="background:#1c1c1f;border-top:1px solid rgba(255,255,255,0.1);border-radius:1rem 1rem 0 0;max-height:80vh;overflow-y:auto">
+    <div class="flex items-center justify-between px-5 pt-4 pb-3" style="border-bottom:1px solid rgba(255,255,255,0.07)">
+      <span class="text-sm font-semibold text-white/80">Track Info</span>
+      <button onclick="closeInfo()" class="text-white/40 hover:text-white transition">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="info-body" class="px-5 py-4 space-y-4"></div>
+  </div>
+
+  <script>
+    function openInfo(encoded) {
+      const t = JSON.parse(decodeURIComponent(encoded));
+      const body = document.getElementById('info-body');
+      const licenseLabel = t.license_type
+        ? `<a href="${t.license_type}" target="_blank" rel="noopener"
+               class="text-accent text-xs underline break-all">${t.license_type}</a>`
+        : '<span class="text-white/30 text-xs">Unknown</span>';
+      const sourceLink = t.source_url
+        ? `<a href="${t.source_url}" target="_blank" rel="noopener"
+               class="text-accent text-xs underline break-all">${t.source_url}</a>`
+        : '';
+      const dlBtn = t.is_downloadable && t.stream_url
+        ? `<a href="${t.stream_url}" download
+               class="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg transition"
+               style="background:rgba(4,170,109,0.12);border:1px solid rgba(4,170,109,0.3);color:#04AA6D">
+             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+             Download MP3
+           </a>`
+        : '';
+      body.innerHTML = `
+        <div>
+          <p class="text-[11px] text-white/35 uppercase tracking-wider mb-1">Title</p>
+          <p class="text-sm text-white/90">${t.title || '—'}</p>
+        </div>
+        <div>
+          <p class="text-[11px] text-white/35 uppercase tracking-wider mb-1">Artist</p>
+          <p class="text-sm text-white/90">${t.artist_name || '—'}</p>
+        </div>
+        <div>
+          <p class="text-[11px] text-white/35 uppercase tracking-wider mb-1">License</p>
+          ${licenseLabel}
+        </div>
+        ${t.attribution_text ? `
+        <div>
+          <p class="text-[11px] text-white/35 uppercase tracking-wider mb-1">Attribution</p>
+          <p class="text-xs text-white/60 leading-relaxed">${t.attribution_text}</p>
+          <button onclick="_copyAttribution('${encodeURIComponent(t.attribution_text || '')}')"
+                  class="mt-2 flex items-center gap-1.5 text-xs text-accent hover:opacity-80 transition">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy attribution
+          </button>
+        </div>` : ''}
+        ${sourceLink ? `
+        <div>
+          <p class="text-[11px] text-white/35 uppercase tracking-wider mb-1">Source</p>
+          ${sourceLink}
+        </div>` : ''}
+        ${dlBtn}
+      `;
+      document.getElementById('info-overlay').classList.remove('hidden');
+      document.getElementById('info-sheet').classList.remove('translate-y-full');
+    }
+    function closeInfo() {
+      document.getElementById('info-overlay').classList.add('hidden');
+      document.getElementById('info-sheet').classList.add('translate-y-full');
+    }
+    function _copyAttribution(encoded) {
+      navigator.clipboard?.writeText(decodeURIComponent(encoded)).then(() => {
+        const btn = event.target.closest('button');
+        const orig = btn.innerHTML;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.innerHTML = orig; }, 1500);
+      });
+    }
+  </script>
+
   <!-- Hidden audio element -->
   <audio id="audio" preload="none" crossorigin="anonymous"></audio>
 
