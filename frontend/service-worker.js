@@ -1,4 +1,4 @@
-const CACHE_NAME = 'music-shell-v2';
+const CACHE_NAME = 'music-shell-v3';
 const AUDIO_CACHE = 'music-audio-v1';
 const BASE = '/music';
 
@@ -69,7 +69,8 @@ async function _cacheFirst(request, cacheName) {
   if (cached) return cached;
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    // 206 Partial Content cannot be stored in Cache API — skip caching
+    if (response.ok && response.status !== 206) {
       const cache = await caches.open(cacheName);
       cache.put(request, response.clone());
     }
@@ -87,7 +88,7 @@ self.addEventListener('message', event => {
     caches.open(AUDIO_CACHE).then(cache => {
       urls.forEach(url => {
         cache.match(url).then(hit => {
-          if (!hit) fetch(url).then(r => { if (r.ok) cache.put(url, r); });
+          if (!hit) fetch(url).then(r => { if (r.ok && r.status !== 206) cache.put(url, r); });
         });
       });
     });
