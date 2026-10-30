@@ -15,21 +15,25 @@ PAGE_SIZE = 200  # Jamendo max is 200
 
 # Genre tags to sweep — each tag query returns up to thousands of tracks.
 # Deduplication by track_id happens in the ingest script.
-# Tag names verified against live Jamendo API (discover_jamendo_tags.py).
+# Tag names verified against live Jamendo API (probe_jamendo_cc_total.py).
+# Only tags that returned >0 results are included.
 JAMENDO_TAGS = [
     # Electronic / dance
-    "electronic", "ambient", "chillwave", "lounge",
-    "house", "techno", "trance", "dance", "disco",
+    "electronic", "ambient", "chillwave", "house", "techno", "trance",
+    "disco", "idm", "synthpop", "newwave", "darkambient", "spaceambient",
+    "drumnbass", "garage",
     # Rock
-    "alternativerock", "hardrock", "classicrock", "progressiverock", "softrock", "metal",
+    "alternativerock", "hardrock", "classicrock", "softrock", "metal",
+    "rock", "indierock", "punkrock", "heavymetal", "deathmetal",
+    "blackmetal", "postrock",
     # Pop / urban
-    "pop", "soul", "hiphop", "blues", "reggae",
-    # Acoustic / folk / world
-    "acoustic", "folk", "world", "jazz", "classical",
+    "pop", "soul", "hiphop", "reggae", "rnb", "gospel", "latin", "ska",
+    # World / folk / acoustic
+    "world", "jazz", "classical", "country",
     # Cinematic / instrumental
-    "cinematic", "orchestral", "neoclassical", "soundtrack", "videogame",
+    "orchestral", "neoclassical", "videogame", "filmscore", "score",
     # Misc
-    "experimental",
+    "experimental", "noise", "spoken",
 ]
 
 BASE_PARAMS = {
