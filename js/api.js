@@ -41,4 +41,9 @@ export function searchAlbums({ artistId, query } = {}) {
   throw new Error("searchAlbums requires artistId or query");
 }
 
+/** GET /radio?genre={genre}&limit={n} */
+export function getRadio(genre, limit = 50) {
+  return request(`/radio?genre=${encodeURIComponent(genre)}&limit=${limit}`);
+}
+
 export { PAGE_SIZE };

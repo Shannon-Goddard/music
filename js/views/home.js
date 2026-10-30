@@ -1,4 +1,4 @@
-import { searchByGenre, searchByType } from '../api.js';
+import { searchByGenre, searchByType, getRadio } from '../api.js';
 import { InfiniteScroll } from '../scroll.js';
 import { playQueue } from '../player.js';
 import { playAt } from '../player.js';
@@ -56,6 +56,13 @@ export async function render(app) {
     </section>
 
     <section class="mb-8">
+      <h2 class="section-label">Radio</h2>
+      <div class="scroll-row">
+        ${GENRES.map(g => _radioChip(g)).join('')}
+      </div>
+    </section>
+
+    <section class="mb-8">
       <h2 class="section-label">${en.home_mood}</h2>
       <div class="scroll-row">
         ${MOODS.map(m => _chip({ label: m.label, attr: 'data-genre', value: m.value })).join('')}
@@ -108,6 +115,13 @@ export async function render(app) {
     });
   });
 
+  app.querySelectorAll('[data-radio]').forEach(el => {
+    el.addEventListener('click', () => {
+      _setActive(el, '[data-radio]');
+      _startRadio(el.dataset.radio);
+    });
+  });
+
   app.querySelectorAll('[data-recent]').forEach(el => {
     el.addEventListener('click', () => playQueue(recentRaw, parseInt(el.dataset.recent)));
   });
@@ -129,6 +143,68 @@ function _setActive(el, selector) {
   });
   el.classList.add('chip-active');
   el.classList.remove('chip');
+}
+
+async function _startRadio(genre) {
+  const section = document.getElementById('genre-results');
+  const title   = document.getElementById('genre-results-title');
+  const list    = document.getElementById('genre-results-list');
+  const status  = document.getElementById('genre-results-status');
+  const bar     = document.getElementById('sticky-count-bar');
+  document.getElementById('home-empty')?.classList.add('hidden');
+
+  section.classList.remove('hidden');
+  title.textContent = `${genre.charAt(0).toUpperCase() + genre.slice(1)} Radio`;
+  list.innerHTML = _skeletons(5);
+  status.textContent = '';
+  if (bar) bar.style.display = 'none';
+
+  setTimeout(() => {
+    const top = section.getBoundingClientRect().top + window.scrollY - 60;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }, 50);
+
+  try {
+    const data = await getRadio(genre, 50);
+    const tracks = data.tracks || [];
+    if (!tracks.length) {
+      list.innerHTML = '';
+      status.textContent = 'No tracks found for this genre.';
+      return;
+    }
+    list.innerHTML = tracks.map((t, i) => _trackRow(t, i)).join('');
+    status.textContent = '';
+    if (bar) {
+      bar.style.display = 'flex';
+      const countEl = document.getElementById('results-count');
+      if (countEl) countEl.textContent = `${tracks.length} tracks`;
+    }
+    // Wire play-all
+    document.getElementById('btn-play-all')?.addEventListener('click', () => playQueue(tracks, 0));
+    // Wire row clicks
+    list.addEventListener('click', e => {
+      const save = e.target.closest('[data-save]');
+      if (save) {
+        e.stopPropagation();
+        const track = tracks.find(t => t.track_id === save.dataset.save);
+        if (track) {
+          const nowSaved = toggleSaved(track);
+          save.classList.toggle('text-accent', nowSaved);
+          save.classList.toggle('text-white/20', !nowSaved);
+          save.querySelector('svg').setAttribute('fill', nowSaved ? 'currentColor' : 'none');
+        }
+        return;
+      }
+      const row = e.target.closest('[data-index]');
+      if (row) playQueue(tracks, parseInt(row.dataset.index));
+    });
+    // Auto-play immediately
+    playQueue(tracks, 0);
+  } catch (err) {
+    list.innerHTML = '';
+    status.textContent = 'Failed to load radio. Try again.';
+    console.error('Radio error:', err);
+  }
 }
 
 function _loadPaged(fetchFn, label) {
@@ -226,6 +302,14 @@ function _typeChip({ label, value, icon }) {
 
 function _chip({ label, attr, value }) {
   return `<button ${attr}="${value}" class="chip">${label}</button>`;
+}
+
+function _radioChip(genre) {
+  return `
+    <button data-radio="${genre.toLowerCase()}" class="chip flex items-center gap-1.5">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" class="opacity-60"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      ${genre}
+    </button>`;
 }
 
 function _miniCard(track, index, type) {
