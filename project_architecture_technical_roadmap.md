@@ -307,7 +307,7 @@ python -u tests\test_ingest_ia.py opensource_audio --start-page 150
 | Service worker 206 error | ✅ Fixed | Cache `v4` skips 206 responses |
 | ccMixter CORS 403 | ✅ Resolved | All records wiped from DB |
 | Lambda total count cache | ⚠️ Known | `total` caches ~5min after large DB changes |
-| Cover art missing on most tracks | ✅ Fixed | Deterministic gradient fallback via `utils.js` — same track always same gradient |
+| Scroll broken (overflow-x:hidden) | ✅ Fixed | `overflow-x:clip` on body — `hidden` creates scroll container collapsing body height |
 | Non-English content in results | ✅ Mitigated | `lang=eng` default filters to English + language-agnostic; EN/All toggle in header |
 
 ---
