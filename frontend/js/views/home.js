@@ -1,6 +1,7 @@
 import { searchByGenre, searchByType } from '../api.js';
 import { InfiniteScroll } from '../scroll.js';
 import { playQueue } from '../player.js';
+import { playAt } from '../player.js';
 import { loadSession } from '../queue.js';
 import { isSaved, toggleSaved } from '../library.js';
 import { artThumb, coverGradient } from '../utils.js';
@@ -30,7 +31,7 @@ export async function render(app) {
   const recentRaw = _loadRecent();
 
   app.innerHTML = `
-    ${session.track_id ? _resumeBar() : ''}
+    ${session.track_id ? _resumeBar(session) : ''}
 
     ${recentRaw.length ? `
       <section class="mb-8">
@@ -112,8 +113,12 @@ export async function render(app) {
   });
 
   app.querySelector('#btn-resume')?.addEventListener('click', () => {
-    const tracks = JSON.parse(localStorage.getItem('music_queue') || '{}').queue || [];
-    if (tracks.length) playQueue(tracks, 0);
+    if (session.track) {
+      playAt(session.track, session.position_sec || 0);
+    } else {
+      const tracks = JSON.parse(localStorage.getItem('music_queue') || '{}').queue || [];
+      if (tracks.length) playQueue(tracks, 0);
+    }
   });
 }
 
@@ -191,11 +196,16 @@ function _loadPaged(fetchFn, label) {
 
 // ── Components ────────────────────────────────────────────
 
-function _resumeBar() {
+function _resumeBar(session) {
+  const title = session.track?.title || 'Last session';
+  const pos = session.position_sec ? _fmt(session.position_sec) : '';
   return `
     <div class="flex items-center justify-between bg-card rounded-lg px-4 py-3 mb-6" style="border:1px solid rgba(255,255,255,0.07)">
-      <p class="text-sm text-white/70">${en.home_continue}</p>
-      <button id="btn-resume" class="text-sm font-medium text-accent hover:opacity-80 transition">Resume</button>
+      <div class="min-w-0">
+        <p class="text-xs text-white/40 mb-0.5">${en.home_continue}</p>
+        <p class="text-sm font-medium truncate">${_esc(title)}${pos ? ` <span class="text-white/30 font-normal">· ${pos}</span>` : ''}</p>
+      </div>
+      <button id="btn-resume" class="ml-4 shrink-0 text-sm font-medium text-accent hover:opacity-80 transition">Resume</button>
     </div>
   `;
 }

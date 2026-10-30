@@ -51,6 +51,7 @@ export function play(track) {
   _updateUI(track);
   _updateMediaSession(track);
   _saveRecent(track);
+  _precacheNext();
   playerEl.classList.remove('hidden');
   document.body.classList.add('player-visible');
 }
@@ -66,7 +67,15 @@ function _saveRecent(track) {
   } catch { /* storage full or unavailable */ }
 }
 
-export function togglePlay() {
+export function playAt(track, positionSec) {
+  if (!track?.stream_url) return;
+  play(track);
+  audio.addEventListener('canplay', () => {
+    if (positionSec > 0) audio.currentTime = positionSec;
+  }, { once: true });
+}
+
+
   if (audio.paused) {
     audio.play();
   } else {
@@ -205,6 +214,21 @@ positionInterval = setInterval(() => {
     Queue.savePosition(audio.currentTime);
   }
 }, 10000);
+
+// ── Offline pre-cache next tracks ───────────────────────
+
+function _precacheNext() {
+  if (!navigator.serviceWorker?.controller) return;
+  const urls = [Queue.next(), Queue.next()]
+    .filter(Boolean)
+    .map(t => t.stream_url)
+    .filter(Boolean);
+  // Restore index — we only peeked
+  Queue.setQueue(Queue.getQueue(), Queue.getCurrentIndex());
+  if (urls.length) {
+    navigator.serviceWorker.controller.postMessage({ type: 'PRECACHE_AUDIO', urls });
+  }
+}
 
 // ── Sleep Timer ───────────────────────────────────────────
 

@@ -46,10 +46,13 @@ export function addToQueue(track) {
 
 /** Save position every 10s for "continue where you left off" */
 export function savePosition(positionSec) {
-  const session = _loadSession();
-  session.position_sec = positionSec;
-  session.track_id = getCurrentTrack()?.track_id;
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  const track = getCurrentTrack();
+  if (!track) return;
+  localStorage.setItem(SESSION_KEY, JSON.stringify({
+    track_id: track.track_id,
+    position_sec: positionSec,
+    track,
+  }));
 }
 
 export function loadSession() {
