@@ -18,22 +18,34 @@ PAGE_SIZE = 200  # Jamendo max is 200
 # Tag names verified against live Jamendo API (probe_jamendo_cc_total.py).
 # Only tags that returned >0 results are included.
 JAMENDO_TAGS = [
+    # Rock (all subgenres Jamendo actually uses)
+    "rock", "indierock", "alternativerock", "rocknroll", "poprock",
+    "electrorock", "bluesrock", "spacerock", "surfrock", "indie",
+    "emo", "garage",
     # Electronic / dance
-    "electronic", "ambient", "chillwave", "house", "techno", "trance",
-    "disco", "idm", "synthpop", "newwave", "darkambient", "spaceambient",
-    "drumnbass", "garage",
-    # Rock
-    "alternativerock", "hardrock", "classicrock", "softrock", "metal",
-    "rock", "indierock", "punkrock", "heavymetal", "deathmetal",
-    "blackmetal", "postrock",
-    # Pop / urban
-    "pop", "soul", "hiphop", "reggae", "rnb", "gospel", "latin", "ska",
-    # World / folk / acoustic
-    "world", "jazz", "classical", "country",
-    # Cinematic / instrumental
-    "orchestral", "neoclassical", "videogame", "filmscore", "score",
-    # Misc
-    "experimental", "noise", "spoken",
+    "electronic", "electronica", "electropop", "synthpop", "house",
+    "deephouse", "dance", "edm", "dubstep", "disco", "eurodance",
+    "8bit", "darkwave", "electroswing", "electrofunk",
+    # Ambient / chill
+    "ambient", "darkambient", "newage", "chillout", "downtempo",
+    "easylistening",
+    # Hip-hop
+    "hiphop", "rap", "alternativehiphop", "triphop", "chillhop", "lofi",
+    # Jazz
+    "jazz", "nujazz", "jazzfunk", "jazzfusion", "smoothjazz", "swing",
+    # Folk / country / singer-songwriter
+    "folk", "singersongwriter", "country",
+    # Classical / cinematic
+    "classical", "neoclassical", "contemporarypiano", "filmscore",
+    # Soul / R&B / funk / gospel
+    "soul", "rnb", "funk", "gospel", "christian",
+    # Pop
+    "pop", "indiepop", "dreampop", "alternativepop", "electropop",
+    "britpop",
+    # Experimental
+    "experimental", "psychedelic",
+    # Other
+    "reggae", "ska", "latin", "world",
 ]
 
 BASE_PARAMS = {

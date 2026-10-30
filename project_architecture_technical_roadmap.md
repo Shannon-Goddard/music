@@ -17,10 +17,11 @@ This document is the master engineering blueprint for the platform. It reflects 
 | Ingestion — IA georgeblood | ✅ Done | 9,697 records (4 deduped) |
 | Ingestion — IA audio_bookspoetry | ✅ Done | 6,144 records (3,618 deduped) |
 | Ingestion — IA librivoxaudio | ✅ Done | 3,819 records (1,096 deduped) |
-| Ingestion — Jamendo | ✅ Done | 13,656 CC tracks, 46 genre tags |
-| Ingestion — Wikimedia Commons | ✅ Done | 3,559 tracks — 15 genre categories, CC audio, ogg/mp3/flac |
+| Ingestion — Jamendo | ✅ Done | 35,025 CC tracks, 47 genre tags (taxonomy-informed re-sweep) |
+| Ingestion — Wikimedia Commons | ✅ Done | 3,559 tracks — 17 genre categories (added soul, r&b), CC audio |
 
-| **Total catalog** | **~61,500 tracks** | IA: 42,037 — Jamendo: 13,656 — Wikimedia: 3,559 |
+| Ingestion — Freesound | ✅ Done | In progress — 24 genre tags, CDN-hosted HQ MP3 previews |
+| **Total catalog** | **~80,600+ tracks** | IA: 42,037 — Jamendo: 35,025 — Wikimedia: 3,559 — Freesound: growing |
 | Ingestion — ccMixter | ❌ Removed | CORS 403 on content server — unplayable |
 | `content_type` classification | ✅ Done | music / podcast / lecture / audiobook / interview / other |
 | `language` field | ✅ Done | ISO 639-2 stored per record, null = language-agnostic |
@@ -30,7 +31,7 @@ This document is the master engineering blueprint for the platform. It reflects 
 | API — `/radio` | ✅ Live | `genre=`, `limit=` — random sample, auto-plays in UI |
 
 | Lambda memory | ✅ 1024MB | All Lambdas, 30s timeout |
-| API — `/stats` | ✅ Live | ~61,500 total — IA: 42,037, Jamendo: 13,656, Wikimedia: 3,559 |
+| API — `/stats` | ✅ Live | ~80,600+ total — IA: 42,037, Jamendo: 35,025, Wikimedia: 3,559, Freesound: growing |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
 | Icons | ✅ Done | Real PNG icons, apple-touch-icon → `logo-180.png` (solid bg) |
 | Service worker | ✅ Fixed | Cache `v9`, 206 fix, offline pre-cache next 2 tracks |
@@ -48,7 +49,7 @@ This document is the master engineering blueprint for the platform. It reflects 
 
 ```
 [ Data Sources ]
-  Internet Archive (7 collections) ✅  Jamendo ✅  Wikimedia Commons ✅  MusicBrainz (enrichment) 🔜
+  Internet Archive (7 collections) ✅  Jamendo ✅  Wikimedia Commons ✅  Freesound ✅  MusicBrainz (enrichment) ������
        │
        ▼
 [ Ingestion & Normalization Layer ]  ← threaded, 10 workers/page, resumable
@@ -280,8 +281,8 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Internet Archive — georgeblood | ✅ Done | 9,697 | 4 deduped — unique 78rpm/shellac catalog |
 | Internet Archive — audio_bookspoetry | ✅ Done | 6,144 | 3,618 deduped |
 | Internet Archive — librivoxaudio | ✅ Done | 3,819 | 1,096 deduped, overlaps w/ bookspoetry |
-| Jamendo | ✅ Done | ~13,656 | 46 genre tags, all CC-licensed |
-| Wikimedia Commons | 🔄 In progress | — | 15 genre categories, CC audio, CORS:*, ogg/mp3/flac — 132 dupes, 162 skipped (non-CC) |
+| Jamendo | ✅ Done | 35,025 | 47 taxonomy-informed tags, full re-sweep, all CC-licensed |
+| Wikimedia Commons | ✅ Done | 3,559 | 17 genre categories (added soul, r&b), CC audio, CORS:*, ogg/mp3/flac |
 | ccMixter | ❌ Removed | 0 | Content server 403s cross-origin — unplayable |
 | Free Music Archive (FMA) | ❌ Dead end | 0 | API dead, hotlinking prohibited |
 | CCMusic Search | ❌ Dead end | 0 | Not a real API — search UI only, no programmatic access |
@@ -291,6 +292,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Spotube | ❌ Not applicable | 0 | YouTube client — ToS prohibits use, no CC licensing |
 | MusicFree | ❌ Not applicable | 0 | Plugin-based player wrapping copyrighted Chinese streaming services |
 | Pixabay | ❌ No audio API | 0 | Images/video API only — music section not in API |
+| Freesound | ������ In progress | growing | 24 genre tags, CDN HQ MP3 previews, duration native, CC-licensed |
 | MusicBrainz | 🔜 Planned | — | Metadata enrichment only, not a track source |
 
 ### Source Vetting Criteria
@@ -309,6 +311,21 @@ python -u tests\test_ingest_ia.py librivoxaudio
 
 # Resume mid-run
 python -u tests\test_ingest_ia.py opensource_audio --start-page 150
+# Resume mid-run
+python -u tests\test_ingest_ia.py opensource_audio --start-page 150
+
+# Jamendo — full taxonomy sweep
+python -u tests\test_ingest_jamendo.py
+
+# Wikimedia — all 17 genres
+python -u tests\test_ingest_wikimedia.py
+
+# Freesound — all 24 tags
+python -u tests\test_ingest_freesound.py
+
+# Backfills
+python -u tests\backfill_content_type.py
+python -u tests\backfill_duration.py --workers 3
 ```
 
 ---
@@ -342,9 +359,11 @@ music/
 │   ├── ingestion/
 │   │   ├── base_adapter.py
 │   │   ├── ia_adapter.py           # IA — 7 collections, threaded, language normalization
-│   │   ├── jamendo_adapter.py      # Jamendo — 46 tags, ~13,656 tracks
+│   │   ├── jamendo_adapter.py      # Jamendo — 47 taxonomy-informed tags, 35,025 tracks
+│   │   ├── wikimedia_adapter.py    # Wikimedia Commons — 17 genre categories, 3,559 tracks
+│   │   ├── freesound_adapter.py    # Freesound — 24 genre tags, CDN HQ MP3 previews
 │   │   ├── ccmixter_adapter.py     # ccMixter — kept for reference, not used
-│   │   ├── normalizer.py           # ALLOWED_PLATFORMS gating
+│   │   ├── normalizer.py           # ALLOWED_PLATFORMS gating (ia, jamendo, wikimedia, freesound)
 │   │   └── deduplicator.py
 │   └── requirements.txt
 │
@@ -387,6 +406,10 @@ music/
 │
 ├── scripts/
 │   ├── backfill_content_type.py
+│   ├── probe_jamendo_taxonomy.py   # Dumps all genre/vartag/instrument labels + counts
+│   ├── probe_ia_taxonomy.py        # Dumps all subject tags across IA collections
+│   ├── jamendo_taxonomy.json       # Output — 64 genres, 140 vartags, 30 instruments
+│   ├── ia_taxonomy.json            # Output — full subject tag frequency map
 │   ├── probe_jamendo_cc_total.py
 │   ├── probe_ia_collections.py     # Item counts across all IA collections
 │   ├── probe_ia_new_collections.py # Sanity check one page per collection
@@ -395,7 +418,11 @@ music/
 ├── tests/
 │   ├── test_ingest.py              # Legacy: IA netlabels + 78rpm
 │   ├── test_ingest_ia.py           # Current: all IA collections, threaded, resumable
-│   ├── test_ingest_jamendo.py      # Jamendo 46-tag sweep
+│   ├── test_ingest_jamendo.py      # Jamendo 47-tag sweep, unlimited pages
+│   ├── test_ingest_wikimedia.py    # Wikimedia 17-genre sweep
+│   ├── test_ingest_freesound.py    # Freesound 24-tag sweep
+│   ├── backfill_content_type.py    # Scan + update content_type by ia_collection rule
+│   ├── backfill_duration.py        # IA tracks missing duration_sec — hits archive.org/metadata
 │   ├── test_ingest_ccmixter.py     # ccMixter — kept for reference, not run
 │   └── wipe_ccmixter.py            # Utility: wipe ccmixter records from DB
 │
@@ -408,45 +435,51 @@ music/
 
 ## 8. Pending Items (Prioritized)
 
-### 1. content_type backfill 🔜 Next
-- ~25,733 records — mostly georgeblood + older IA items with weak metadata
-- `georgeblood` collection → all `music` by definition
-- `librivoxaudio` collection → all `audiobook` by definition
-- Script keyed off `ia_collection` field — scan + `update_item` loop, no API changes needed
-- Biggest quality improvement per effort — cleans up the Type filter on home screen
+### 1. content_type backfill ������ Running
+- ~25,733 records sitting as `other` — mostly georgeblood + older IA items
+- `georgeblood` → `music`, `librivoxaudio` → `audiobook`, `audio_bookspoetry` → `audiobook`
+- Script: `tests/backfill_content_type.py` — scan + `update_item`, no API calls needed
 
-### 2. duration_sec backfill 🔜
-- IA tracks missing `duration_sec` — gap is visible now that Wikimedia tracks have it
-- Hit `archive.org/metadata/{identifier}` per track, parse `length` from file list
-- One request per track, rate-limited — slower but straightforward
+### 2. duration_sec backfill ������ Running
+- IA tracks missing `duration_sec` — gap visible now Wikimedia/Freesound tracks have it
+- Script: `tests/backfill_duration.py` — hits `archive.org/metadata/{id}`, rate-limited
+- Run overnight with `--workers 3`
 
-### 3. More Wikimedia genres 🔜
-- Current adapter maps 15 genres — more categories worth adding:
-  `Blues`, `Reggae`, `Country`, `Soul`, `R&B`, `Gospel`, `Latin`, `Funk`
-- Same adapter, just extend `GENRE_CATEGORIES` dict in `wikimedia_adapter.py`
-- Re-run `test_ingest_wikimedia.py` for new genres only
+### 3. Freesound full ingest ������ Running
+- 24 genre tags, CDN-hosted HQ MP3 previews, duration native, all CC-licensed
+- Script: `tests/test_ingest_freesound.py`
+- API key in Secrets Manager: `freesound-api`
 
-### 4. Openverse 🔜 (when API recovers)
+### 4. Genre normalization pass ������ Next
+- Radio endpoint queries `GenreIndex` by exact genre key — most IA tracks store raw subject tags
+  (e.g. `"jazz improvisation"`, `"78rpm"`) that don't match clean genre keys (`"jazz"`, `"rock"`)
+- IA taxonomy probed (`scripts/probe_ia_taxonomy.py`) — `ia_taxonomy.json` has full subject map
+- Build `tests/backfill_genre.py`: scan IA tracks, map subject tags → canonical genre keys,
+  `update_item` on `genre` field — fixes Radio section and GenreIndex query accuracy
+
+### 5. IA album-walk for deeper genre coverage ������
+- Current IA ingest uses tag-based search which hits a pagination ceiling
+- Walk `/albums?tags={genre}` → fetch all tracks per album — bypasses ceiling
+- Target genres thin on Jamendo: metal, punk, industrial, blues, hardcore
+- IA taxonomy JSON (`scripts/ia_taxonomy.json`) will inform the tag mapping
+
+### 6. Openverse ������ (when API recovers)
 - Search endpoint currently timing out — stats endpoint confirmed working
-- 644k Jamendo tracks + 3.98M Wikimedia not yet touched via their API
-- Would 10x the catalog — highest volume multiplier available
-- Revisit periodically; `scripts/probe_openverse.py` exists to check status
+- 644k Jamendo + 3.98M Wikimedia tracks not yet touched via their API
+- Would 10x+ the catalog — highest volume multiplier available
 
-### 5. Health checker scheduling
+### 7. Health checker scheduling
 - `link_checker.py` exists and works — runs manually only
-- Dead links accumulate over time especially in IA
 - Add EventBridge cron rule → Lambda trigger, weekly run
 
-### 6. Monthly ingest cron
+### 8. Monthly ingest cron
 - GitHub Actions workflow to re-run adapters and pick up new uploads
-- Wikimedia and Jamendo both add content continuously
+- Jamendo and Freesound both add content continuously
 
-### 7. MusicBrainz metadata enrichment
+### 9. MusicBrainz metadata enrichment
 - Backfill script exists (`scripts/backfill_musicbrainz.py`)
 - Hit rate ~3–4% on georgeblood/78rpm due to messy metadata
-- Lower priority until content_type and duration are clean
-
----
+- Lower priority until genre normalization and duration backfill are clean
 
 ## 9. Key AWS Resources
 
@@ -467,6 +500,8 @@ music/
 | API Gateway ID | `9jxmxtjybb` |
 | API base URL | `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1` |
 | Jamendo credentials | Secrets Manager `music/jamendo` |
+| Freesound credentials | Secrets Manager `freesound-api` |
+| Freesound credentials | Secrets Manager `freesound-api` |
 | Frontend (live) | `https://shannon-goddard.github.io/music/` |
 | GitHub repo | `https://github.com/Shannon-Goddard/music` |
 

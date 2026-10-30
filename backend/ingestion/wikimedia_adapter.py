@@ -63,6 +63,8 @@ GENRE_CATEGORIES = {
     'world':       'Category:Audio_files_of_world_music',
     'traditional': 'Category:Audio_files_of_traditional_music',
     'instrumental':'Category:Audio_files_of_instrumental_music',
+    'soul':        'Category:Audio_files_of_soul_music',
+    'r&b':         'Category:Audio_files_of_rhythm_and_blues',
 }
 
 # Audio MIME types we accept

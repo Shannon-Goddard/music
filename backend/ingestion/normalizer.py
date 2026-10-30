@@ -11,7 +11,7 @@ REQUIRED_FIELDS = [
     "dataset_version",
 ]
 
-ALLOWED_PLATFORMS = {"internet_archive", "jamendo", "fma", "ccmixter", "wikimedia"}
+ALLOWED_PLATFORMS = {"internet_archive", "jamendo", "fma", "ccmixter", "wikimedia", "freesound"}
 ALLOWED_HEALTH_STATUSES = {"active", "dead_link", "pending_recheck"}
 ALLOWED_CONTENT_TYPES = {"music", "podcast", "interview", "lecture", "audiobook", "spoken_word", "other"}
 
