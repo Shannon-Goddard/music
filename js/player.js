@@ -227,12 +227,12 @@ positionInterval = setInterval(() => {
 
 function _precacheNext() {
   if (!navigator.serviceWorker?.controller) return;
-  const urls = [Queue.next(), Queue.next()]
+  const q = Queue.getQueue();
+  const idx = Queue.getCurrentIndex();
+  const urls = [q[idx + 1], q[idx + 2]]
     .filter(Boolean)
     .map(t => t.stream_url)
     .filter(Boolean);
-  // Restore index — we only peeked
-  Queue.setQueue(Queue.getQueue(), Queue.getCurrentIndex());
   if (urls.length) {
     navigator.serviceWorker.controller.postMessage({ type: 'PRECACHE_AUDIO', urls });
   }

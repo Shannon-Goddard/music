@@ -1,4 +1,4 @@
-const CACHE_NAME = 'music-shell-v8';
+const CACHE_NAME = 'music-shell-v9';
 const AUDIO_CACHE = 'music-audio-v1';
 const BASE = '/music';
 
@@ -49,8 +49,8 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Audio streams — serve from cache if available, else network
-  if (url.hostname === 'archive.org' && url.pathname.endsWith('.mp3')) {
+  // Audio streams — serve from cache if available, else network (no caching on CORS fail)
+  if (url.hostname === 'archive.org' || url.hostname.includes('jamendo.com')) {
     event.respondWith(_cacheFirst(request, AUDIO_CACHE));
     return;
   }
@@ -89,7 +89,9 @@ self.addEventListener('message', event => {
     caches.open(AUDIO_CACHE).then(cache => {
       urls.forEach(url => {
         cache.match(url).then(hit => {
-          if (!hit) fetch(url).then(r => { if (r.ok && r.status !== 206) cache.put(url, r); });
+          if (!hit) fetch(url)
+            .then(r => { if (r.ok && r.status !== 206) cache.put(url, r); })
+            .catch(() => {});  // silently ignore CORS/network failures on precache
         });
       });
     });
