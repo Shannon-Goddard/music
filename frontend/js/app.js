@@ -104,17 +104,10 @@ document.addEventListener('trackchange', e => {
 // ── Back to top ───────────────────────────────────────
 
 const backToTop = document.getElementById('back-to-top');
-const _scrollEl = () => document.getElementById('app');
-function _onScroll() {
-  backToTop.classList.toggle('visible', (_scrollEl()?.scrollTop ?? window.scrollY) > 300);
-}
-document.getElementById('app').addEventListener('scroll', _onScroll, { passive: true });
-window.addEventListener('scroll', _onScroll, { passive: true });
-backToTop.addEventListener('click', () => {
-  const el = _scrollEl();
-  if (el && el.scrollHeight > el.clientHeight) el.scrollTo({ top: 0, behavior: 'smooth' });
-  else window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+window.addEventListener('scroll', () => {
+  backToTop.classList.toggle('visible', window.scrollY > 300);
+}, { passive: true });
+backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 // ── Language toggle ───────────────────────────────────────
 
