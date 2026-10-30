@@ -7,9 +7,11 @@
 
 ## Endpoints
 - GET /tracks/search?q={query}&genre={genre}&limit={n}
+- GET /radio?genre={genre}&limit={n}
 
 ## Lambda Functions
 - music-search   arn:aws:lambda:us-east-1:170377509849:function:music-search
+- music-radio    arn:aws:lambda:us-east-1:170377509849:function:music-radio
 
 ## DynamoDB
 - Table:     music-tracks
