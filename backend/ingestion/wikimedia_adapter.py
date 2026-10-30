@@ -223,7 +223,6 @@ class WikimediaAdapter(BaseAdapter):
             'artist_name':      artist,
             'album_id':         album_id,
             'album_title':      title,
-            'track_number':     None,
             'genre':            self.genre,
             'tags':             tags,
             'language':         None,
