@@ -1,4 +1,4 @@
-const CACHE_NAME = 'music-shell-v4';
+const CACHE_NAME = 'music-shell-v5';
 const AUDIO_CACHE = 'music-audio-v1';
 const BASE = '/music';
 
