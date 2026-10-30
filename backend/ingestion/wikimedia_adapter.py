@@ -15,6 +15,7 @@ import re
 import time
 import hashlib
 import logging
+from decimal import Decimal
 from datetime import datetime, timezone
 
 import requests
@@ -201,7 +202,7 @@ class WikimediaAdapter(BaseAdapter):
         duration = ii.get('duration')
         if duration:
             try:
-                duration = float(duration)
+                duration = Decimal(str(float(duration)))
             except (ValueError, TypeError):
                 duration = None
 

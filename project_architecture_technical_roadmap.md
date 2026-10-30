@@ -276,8 +276,16 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Internet Archive — audio_bookspoetry | ✅ Done | 6,144 | 3,618 deduped |
 | Internet Archive — librivoxaudio | ✅ Done | 3,819 | 1,096 deduped, overlaps w/ bookspoetry |
 | Jamendo | ✅ Done | ~13,656 | 46 genre tags, all CC-licensed |
+| Wikimedia Commons | 🔄 In progress | — | 15 genre categories, CC audio, CORS:*, ogg/mp3/flac |
 | ccMixter | ❌ Removed | 0 | Content server 403s cross-origin — unplayable |
 | Free Music Archive (FMA) | ❌ Dead end | 0 | API dead, hotlinking prohibited |
+| CCMusic Search | ❌ Dead end | 0 | Not a real API — search UI only, no programmatic access |
+| Openverse | ⏸ Paused | 0 | API confirmed (644k Jamendo + 3.98M Wikimedia) but search endpoint down — revisit |
+| Starfrosch | ❌ Dead end | 0 | No API, Cloudflare-protected website only |
+| CC Wiki Directory | ❌ Dead end | 0 | Page no longer exists (wgArticleId: 0) |
+| Spotube | ❌ Not applicable | 0 | YouTube client — ToS prohibits use, no CC licensing |
+| MusicFree | ❌ Not applicable | 0 | Plugin-based player wrapping copyrighted Chinese streaming services |
+| Pixabay | ❌ No audio API | 0 | Images/video API only — music section not in API |
 | MusicBrainz | 🔜 Planned | — | Metadata enrichment only, not a track source |
 
 ### Source Vetting Criteria
