@@ -1,7 +1,7 @@
 {
   "name": "Music",
   "short_name": "Music",
-  "description": "Millions of free, open-licensed tracks. Your infinite music library.",
+  "description": "Free, open-licensed music from the Internet Archive, Jamendo, Freesound, and Wikimedia Commons. No account, no ads, free forever.",
   "start_url": "/music/",
   "scope": "/music/",
   "display": "standalone",
