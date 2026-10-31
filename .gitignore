@@ -8,6 +8,10 @@
 __pycache__/
 *.py[cod]
 
+# Output / scratch files
+probe2_out.txt
+*_out.txt
+
 # Lambda build artifacts
 *.zip
 *_out.json
