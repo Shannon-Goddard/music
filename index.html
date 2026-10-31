@@ -5,13 +5,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#111113" />
   <meta name="description" content="Free, open-licensed music from the Internet Archive, Jamendo, Freesound, and Wikimedia Commons. No account, no ads, free forever." />
+  <meta name="robots" content="index, follow" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
 
-  <title>Music</title>
+  <!-- Google Search Console verification -->
+  <meta name="google-site-verification" content="fBUb-Thpl6inUmZudEzwGsRMT5PXpFpRVzbo-h9CGsc" />
 
-  <link rel="manifest" href="/music/manifest.json" />
-  <link rel="stylesheet" href="/music/css/app.css" />
-  <link rel="icon" href="/music/icons/icon-192.png" type="image/png" />
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://shannon-goddard.github.io/music/" />
+  <meta property="og:title"       content="Music — Free Open-Licensed Streaming" />
+  <meta property="og:description" content="Free, open-licensed music from the Internet Archive, Jamendo, Freesound, and Wikimedia Commons. No account, no ads, free forever." />
+  <meta property="og:image"       content="https://shannon-goddard.github.io/music/icons/preview.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Music — Free Open-Licensed Streaming" />
+  <meta name="twitter:description" content="Free, open-licensed music from the Internet Archive, Jamendo, Freesound, and Wikimedia Commons. No account, no ads, free forever." />
+  <meta name="twitter:image"       content="https://shannon-goddard.github.io/music/icons/preview.png" />
+
+  <title>Music — Free Open-Licensed Streaming</title>
+
+  <link rel="canonical"      href="https://shannon-goddard.github.io/music/" />
+  <link rel="manifest"       href="/music/manifest.json" />
+  <link rel="stylesheet"     href="/music/css/app.css" />
+  <link rel="icon"           href="/music/icons/icon-192.png" type="image/png" />
   <link rel="apple-touch-icon" href="/music/icons/icon-192.png" />
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-388V16V92T"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-388V16V92T', { anonymize_ip: true });
+  </script>
+
+  <!-- JSON-LD structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://shannon-goddard.github.io/music/#website",
+        "url": "https://shannon-goddard.github.io/music/",
+        "name": "Music",
+        "description": "Free, open-licensed music from the Internet Archive, Jamendo, Freesound, and Wikimedia Commons.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://shannon-goddard.github.io/music/#/search?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "MusicGroup",
+        "@id": "https://shannon-goddard.github.io/music/#app",
+        "name": "Music",
+        "url": "https://shannon-goddard.github.io/music/",
+        "description": "Stream free, open-licensed music from the Internet Archive, Jamendo, Freesound, and Wikimedia Commons. No account required.",
+        "genre": ["Classical", "Jazz", "Folk", "Electronic", "Ambient", "World"],
+        "sameAs": ["https://github.com/Shannon-Goddard/music"]
+      }
+    ]
+  }
+  </script>
 
   <script>const _cw=console.warn;console.warn=(...a)=>{if(a[0]?.includes?.('cdn.tailwindcss.com'))return;_cw(...a);};</script>
   <script src="https://cdn.tailwindcss.com/3.4.1"></script>
@@ -379,7 +441,7 @@
         <div>
           <p class="text-[11px] text-white/35 uppercase tracking-wider mb-1">Attribution</p>
           <p class="text-xs text-white/60 leading-relaxed">${t.attribution_text}</p>
-          <button onclick="_copyAttribution('${encodeURIComponent(t.attribution_text || '')}')"
+          <button onclick="_copyAttribution('${encodeURIComponent(t.attribution_text || '')}', this)"
                   class="mt-2 flex items-center gap-1.5 text-xs text-accent hover:opacity-80 transition">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Copy attribution
@@ -401,10 +463,10 @@
       s.classList.add('translate-y-full');
       s.classList.add('pointer-events-none');
     }
-    function _copyAttribution(encoded) {
+    function _copyAttribution(encoded, el) {
+      const btn = el.closest('button');
+      const orig = btn.innerHTML;
       navigator.clipboard?.writeText(decodeURIComponent(encoded)).then(() => {
-        const btn = event.target.closest('button');
-        const orig = btn.innerHTML;
         btn.textContent = 'Copied!';
         setTimeout(() => { btn.innerHTML = orig; }, 1500);
       });
