@@ -1,0 +1,274 @@
+2026-10-30 10:53:19,206 INFO === MusicBrainz backfill start ===
+2026-10-30 10:53:19,206 INFO type=music  limit=unlimited  dry_run=False  workers=3
+2026-10-30 10:53:19,402 INFO Found credentials in shared credentials file: ~/.aws/credentials
+2026-10-30 10:53:35,162 WARNING MB request error: HTTPSConnectionPool(host='musicbrainz.org', port=443): Max retries exceeded with url: /ws/2/recording?query=recording%3A%22Good+bye+Dolly+Gray%22+AND+artist%3A%22haydn+quartet+%3B+cobb%2C+will+d.+%3B+barnes%2C+paul%22&limit=5&fmt=json (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x0000029086BC0200>, 'Connection to musicbrainz.org timed out. (connect timeout=15)'))
+2026-10-30 10:53:57,873 INFO progress: total=50  hits=2  partial=0  miss=47  skip=1  err=0
+2026-10-30 10:54:20,497 INFO progress: total=100  hits=3  partial=0  miss=93  skip=4  err=0
+2026-10-30 10:54:43,196 INFO progress: total=150  hits=3  partial=0  miss=142  skip=5  err=0
+2026-10-30 10:55:05,704 INFO progress: total=200  hits=3  partial=0  miss=190  skip=7  err=0
+2026-10-30 10:55:37,770 INFO progress: total=250  hits=4  partial=1  miss=237  skip=8  err=0
+2026-10-30 10:55:59,049 INFO progress: total=300  hits=4  partial=1  miss=285  skip=10  err=0
+2026-10-30 10:56:20,107 INFO progress: total=350  hits=4  partial=1  miss=332  skip=13  err=0
+2026-10-30 10:56:41,247 INFO progress: total=400  hits=4  partial=1  miss=379  skip=16  err=0
+2026-10-30 10:57:03,993 INFO progress: total=450  hits=4  partial=1  miss=427  skip=18  err=0
+2026-10-30 10:57:23,307 INFO progress: total=500  hits=4  partial=2  miss=469  skip=25  err=0
+2026-10-30 10:57:44,715 INFO progress: total=550  hits=4  partial=2  miss=514  skip=30  err=0
+2026-10-30 10:58:08,017 INFO progress: total=600  hits=4  partial=2  miss=562  skip=32  err=0
+2026-10-30 10:58:33,601 INFO progress: total=650  hits=4  partial=2  miss=611  skip=33  err=0
+2026-10-30 10:58:54,843 INFO progress: total=700  hits=4  partial=2  miss=656  skip=38  err=0
+2026-10-30 10:59:15,999 INFO progress: total=750  hits=4  partial=2  miss=702  skip=42  err=0
+2026-10-30 10:59:39,826 INFO progress: total=800  hits=5  partial=2  miss=751  skip=42  err=0
+2026-10-30 11:00:05,605 INFO progress: total=850  hits=7  partial=2  miss=795  skip=46  err=0
+2026-10-30 11:00:30,178 INFO progress: total=900  hits=8  partial=2  miss=843  skip=47  err=0
+2026-10-30 11:00:55,951 INFO progress: total=950  hits=9  partial=2  miss=889  skip=50  err=0
+2026-10-30 11:01:18,372 INFO progress: total=1000  hits=9  partial=2  miss=936  skip=53  err=0
+2026-10-30 11:01:47,848 INFO progress: total=1050  hits=9  partial=2  miss=977  skip=62  err=0
+2026-10-30 11:02:14,141 INFO progress: total=1100  hits=10  partial=2  miss=1020  skip=68  err=0
+2026-10-30 11:02:36,554 INFO progress: total=1150  hits=10  partial=2  miss=1063  skip=75  err=0
+2026-10-30 11:03:01,875 INFO progress: total=1200  hits=10  partial=2  miss=1109  skip=79  err=0
+2026-10-30 11:03:29,846 INFO progress: total=1250  hits=11  partial=2  miss=1154  skip=83  err=0
+2026-10-30 11:03:55,176 INFO progress: total=1300  hits=11  partial=2  miss=1200  skip=87  err=0
+2026-10-30 11:04:19,935 INFO progress: total=1350  hits=11  partial=2  miss=1248  skip=89  err=0
+2026-10-30 11:04:43,090 INFO progress: total=1400  hits=11  partial=2  miss=1296  skip=91  err=0
+2026-10-30 11:05:04,766 INFO progress: total=1450  hits=11  partial=2  miss=1342  skip=95  err=0
+2026-10-30 11:05:27,074 INFO progress: total=1500  hits=11  partial=2  miss=1388  skip=99  err=0
+2026-10-30 11:05:53,596 INFO progress: total=1550  hits=12  partial=2  miss=1434  skip=102  err=0
+2026-10-30 11:06:18,119 INFO progress: total=1600  hits=13  partial=2  miss=1481  skip=104  err=0
+2026-10-30 11:06:44,917 INFO progress: total=1650  hits=15  partial=3  miss=1525  skip=107  err=0
+2026-10-30 11:07:10,022 INFO progress: total=1700  hits=15  partial=4  miss=1572  skip=109  err=0
+2026-10-30 11:07:32,902 INFO progress: total=1750  hits=15  partial=5  miss=1615  skip=115  err=0
+2026-10-30 11:07:54,437 INFO progress: total=1800  hits=15  partial=5  miss=1661  skip=119  err=0
+2026-10-30 11:08:18,137 INFO progress: total=1850  hits=15  partial=6  miss=1706  skip=123  err=0
+2026-10-30 11:08:40,886 INFO progress: total=1900  hits=15  partial=6  miss=1753  skip=126  err=0
+2026-10-30 11:09:03,595 INFO progress: total=1950  hits=15  partial=6  miss=1800  skip=129  err=0
+2026-10-30 11:09:24,065 INFO progress: total=2000  hits=15  partial=6  miss=1844  skip=135  err=0
+2026-10-30 11:09:48,189 INFO progress: total=2050  hits=15  partial=6  miss=1890  skip=139  err=0
+2026-10-30 11:10:12,232 INFO progress: total=2100  hits=16  partial=6  miss=1938  skip=140  err=0
+2026-10-30 11:10:35,049 INFO progress: total=2150  hits=16  partial=6  miss=1987  skip=141  err=0
+2026-10-30 11:11:00,051 INFO progress: total=2200  hits=17  partial=6  miss=2036  skip=141  err=0
+2026-10-30 11:11:22,482 INFO progress: total=2250  hits=17  partial=6  miss=2081  skip=146  err=0
+2026-10-30 11:11:51,072 INFO progress: total=2300  hits=17  partial=7  miss=2127  skip=149  err=0
+2026-10-30 11:12:15,536 INFO progress: total=2350  hits=18  partial=7  miss=2172  skip=153  err=0
+2026-10-30 11:12:43,674 INFO progress: total=2400  hits=18  partial=7  miss=2219  skip=156  err=0
+2026-10-30 11:13:11,779 INFO progress: total=2450  hits=19  partial=9  miss=2266  skip=156  err=0
+2026-10-30 11:13:46,220 INFO progress: total=2500  hits=20  partial=12  miss=2308  skip=160  err=0
+2026-10-30 11:14:13,129 INFO progress: total=2550  hits=20  partial=12  miss=2355  skip=163  err=0
+2026-10-30 11:14:43,719 INFO progress: total=2600  hits=21  partial=13  miss=2401  skip=165  err=0
+2026-10-30 11:15:06,826 INFO progress: total=2650  hits=21  partial=13  miss=2449  skip=167  err=0
+2026-10-30 11:15:28,420 INFO progress: total=2700  hits=21  partial=13  miss=2495  skip=171  err=0
+2026-10-30 11:15:52,292 INFO progress: total=2750  hits=21  partial=14  miss=2543  skip=172  err=0
+2026-10-30 11:16:15,031 INFO progress: total=2800  hits=22  partial=14  miss=2588  skip=176  err=0
+2026-10-30 11:16:52,973 INFO progress: total=2850  hits=26  partial=15  miss=2629  skip=180  err=0
+2026-10-30 11:17:25,287 INFO progress: total=2900  hits=26  partial=15  miss=2675  skip=184  err=0
+2026-10-30 11:17:57,126 INFO progress: total=2950  hits=27  partial=15  miss=2723  skip=185  err=0
+2026-10-30 11:18:22,961 INFO progress: total=3000  hits=28  partial=15  miss=2769  skip=188  err=0
+2026-10-30 11:18:44,533 INFO progress: total=3050  hits=29  partial=15  miss=2813  skip=193  err=0
+2026-10-30 11:19:09,243 INFO progress: total=3100  hits=29  partial=15  miss=2863  skip=193  err=0
+2026-10-30 11:19:31,740 INFO progress: total=3150  hits=29  partial=16  miss=2910  skip=195  err=0
+2026-10-30 11:19:56,355 INFO progress: total=3200  hits=30  partial=16  miss=2957  skip=197  err=0
+2026-10-30 11:20:22,642 INFO progress: total=3250  hits=32  partial=17  miss=3002  skip=199  err=0
+2026-10-30 11:20:43,762 INFO progress: total=3300  hits=32  partial=17  miss=3049  skip=202  err=0
+2026-10-30 11:21:05,007 INFO progress: total=3350  hits=32  partial=17  miss=3096  skip=205  err=0
+2026-10-30 11:21:31,154 INFO progress: total=3400  hits=34  partial=17  miss=3141  skip=208  err=0
+2026-10-30 11:21:53,606 INFO progress: total=3450  hits=35  partial=17  miss=3185  skip=213  err=0
+2026-10-30 11:22:20,833 INFO progress: total=3500  hits=37  partial=17  miss=3229  skip=217  err=0
+2026-10-30 11:22:46,122 INFO progress: total=3550  hits=37  partial=18  miss=3277  skip=218  err=0
+2026-10-30 11:23:08,887 INFO progress: total=3600  hits=38  partial=18  miss=3322  skip=222  err=0
+2026-10-30 11:23:34,825 INFO progress: total=3650  hits=38  partial=19  miss=3370  skip=223  err=0
+2026-10-30 11:24:08,774 INFO progress: total=3700  hits=38  partial=22  miss=3415  skip=225  err=0
+2026-10-30 11:24:33,234 INFO progress: total=3750  hits=38  partial=22  miss=3464  skip=226  err=0
+2026-10-30 11:24:58,765 INFO progress: total=3800  hits=38  partial=24  miss=3508  skip=230  err=0
+2026-10-30 11:25:20,933 INFO progress: total=3850  hits=38  partial=25  miss=3555  skip=232  err=0
+2026-10-30 11:25:42,921 INFO progress: total=3900  hits=38  partial=25  miss=3601  skip=236  err=0
+2026-10-30 11:26:06,512 INFO progress: total=3950  hits=39  partial=25  miss=3647  skip=239  err=0
+2026-10-30 11:26:28,972 INFO progress: total=4000  hits=39  partial=25  miss=3693  skip=243  err=0
+2026-10-30 11:26:51,088 INFO progress: total=4050  hits=39  partial=25  miss=3740  skip=246  err=0
+2026-10-30 11:27:12,246 INFO progress: total=4100  hits=39  partial=25  miss=3784  skip=252  err=0
+2026-10-30 11:27:35,031 INFO progress: total=4150  hits=39  partial=26  miss=3831  skip=254  err=0
+2026-10-30 11:27:57,971 INFO progress: total=4200  hits=39  partial=26  miss=3879  skip=256  err=0
+2026-10-30 11:28:19,818 INFO progress: total=4250  hits=39  partial=26  miss=3924  skip=261  err=0
+2026-10-30 11:28:48,477 INFO progress: total=4300  hits=40  partial=27  miss=3969  skip=264  err=0
+2026-10-30 11:29:27,403 INFO progress: total=4350  hits=41  partial=27  miss=4016  skip=266  err=0
+2026-10-30 11:30:02,983 INFO progress: total=4400  hits=42  partial=27  miss=4063  skip=268  err=0
+2026-10-30 11:30:27,297 INFO progress: total=4450  hits=43  partial=27  miss=4105  skip=275  err=0
+2026-10-30 11:30:50,060 INFO progress: total=4500  hits=43  partial=28  miss=4148  skip=281  err=0
+2026-10-30 11:31:11,169 INFO progress: total=4550  hits=43  partial=28  miss=4195  skip=284  err=0
+2026-10-30 11:31:33,892 INFO progress: total=4600  hits=43  partial=29  miss=4241  skip=287  err=0
+2026-10-30 11:31:56,836 INFO progress: total=4650  hits=44  partial=29  miss=4286  skip=291  err=0
+2026-10-30 11:32:27,238 INFO progress: total=4700  hits=45  partial=32  miss=4332  skip=291  err=0
+2026-10-30 11:32:52,130 INFO progress: total=4750  hits=46  partial=33  miss=4378  skip=293  err=0
+2026-10-30 11:33:15,922 INFO progress: total=4800  hits=46  partial=33  miss=4425  skip=296  err=0
+2026-10-30 11:33:39,308 INFO progress: total=4850  hits=46  partial=33  miss=4472  skip=299  err=0
+2026-10-30 11:34:06,112 INFO progress: total=4900  hits=47  partial=33  miss=4518  skip=302  err=0
+2026-10-30 11:34:56,399 INFO === MusicBrainz backfill start ===
+2026-10-30 11:34:56,399 INFO type=music  collection=georgeblood  limit=unlimited  dry_run=False  workers=3
+2026-10-30 11:34:56,537 INFO Found credentials in shared credentials file: ~/.aws/credentials
+2026-10-30 11:35:05,386 INFO === MusicBrainz backfill start ===
+2026-10-30 11:35:05,386 INFO type=music  collection=78rpm  limit=unlimited  dry_run=False  workers=3
+2026-10-30 11:35:05,391 INFO Resuming from saved token
+2026-10-30 11:35:05,523 INFO Found credentials in shared credentials file: ~/.aws/credentials
+2026-10-30 11:35:25,639 INFO progress: total=50  hits=0  partial=0  miss=47  skip=3  err=0
+2026-10-30 11:35:32,803 INFO progress: total=50  hits=0  partial=0  miss=50  skip=0  err=0
+2026-10-30 11:35:58,429 INFO progress: total=100  hits=1  partial=0  miss=94  skip=5  err=0
+2026-10-30 11:36:00,699 INFO progress: total=100  hits=0  partial=0  miss=100  skip=0  err=0
+2026-10-30 11:36:26,661 INFO progress: total=150  hits=1  partial=0  miss=141  skip=8  err=0
+2026-10-30 11:36:30,668 INFO progress: total=150  hits=0  partial=0  miss=150  skip=0  err=0
+2026-10-30 11:36:56,059 INFO progress: total=200  hits=1  partial=3  miss=186  skip=10  err=0
+2026-10-30 11:36:58,680 INFO progress: total=200  hits=0  partial=0  miss=200  skip=0  err=0
+2026-10-30 11:37:20,762 INFO progress: total=250  hits=1  partial=3  miss=232  skip=14  err=0
+2026-10-30 11:37:26,988 INFO progress: total=250  hits=0  partial=0  miss=250  skip=0  err=0
+2026-10-30 11:37:47,324 INFO progress: total=300  hits=1  partial=3  miss=279  skip=17  err=0
+2026-10-30 11:37:54,599 INFO progress: total=300  hits=0  partial=0  miss=300  skip=0  err=0
+2026-10-30 11:38:12,373 INFO progress: total=350  hits=1  partial=3  miss=325  skip=21  err=0
+2026-10-30 11:38:21,292 INFO progress: total=350  hits=0  partial=0  miss=350  skip=0  err=0
+2026-10-30 11:38:38,286 INFO progress: total=400  hits=1  partial=3  miss=369  skip=27  err=0
+2026-10-30 11:38:48,894 INFO progress: total=400  hits=0  partial=0  miss=400  skip=0  err=0
+2026-10-30 11:39:11,228 INFO progress: total=450  hits=2  partial=5  miss=413  skip=30  err=0
+2026-10-30 11:39:17,398 INFO progress: total=450  hits=0  partial=0  miss=450  skip=0  err=0
+2026-10-30 11:39:44,076 INFO progress: total=500  hits=3  partial=5  miss=461  skip=31  err=0
+2026-10-30 11:39:46,499 INFO progress: total=500  hits=0  partial=0  miss=500  skip=0  err=0
+2026-10-30 11:40:12,197 INFO progress: total=550  hits=0  partial=0  miss=550  skip=0  err=0
+2026-10-30 11:40:18,782 INFO progress: total=550  hits=3  partial=6  miss=507  skip=34  err=0
+2026-10-30 11:40:41,001 INFO progress: total=600  hits=0  partial=0  miss=600  skip=0  err=0
+2026-10-30 11:40:43,035 INFO progress: total=600  hits=3  partial=7  miss=552  skip=38  err=0
+2026-10-30 11:41:08,483 INFO progress: total=650  hits=0  partial=0  miss=650  skip=0  err=0
+2026-10-30 11:41:10,103 INFO progress: total=650  hits=3  partial=9  miss=598  skip=40  err=0
+2026-10-30 11:41:35,833 INFO progress: total=700  hits=0  partial=0  miss=700  skip=0  err=0
+2026-10-30 11:41:35,878 INFO progress: total=700  hits=3  partial=10  miss=645  skip=42  err=0
+2026-10-30 11:42:01,464 INFO progress: total=750  hits=3  partial=10  miss=689  skip=48  err=0
+2026-10-30 11:42:02,711 INFO progress: total=750  hits=0  partial=0  miss=750  skip=0  err=0
+2026-10-30 11:42:27,021 INFO progress: total=800  hits=3  partial=10  miss=737  skip=50  err=0
+2026-10-30 11:42:29,562 INFO progress: total=800  hits=0  partial=0  miss=800  skip=0  err=0
+2026-10-30 11:42:51,962 INFO progress: total=850  hits=3  partial=11  miss=782  skip=54  err=0
+2026-10-30 11:42:55,133 INFO progress: total=850  hits=0  partial=0  miss=850  skip=0  err=0
+2026-10-30 11:43:21,760 INFO progress: total=900  hits=0  partial=0  miss=900  skip=0  err=0
+2026-10-30 11:43:23,836 INFO progress: total=900  hits=3  partial=13  miss=824  skip=60  err=0
+2026-10-30 11:43:48,891 INFO progress: total=950  hits=0  partial=0  miss=950  skip=0  err=0
+2026-10-30 11:44:00,605 INFO progress: total=950  hits=4  partial=15  miss=869  skip=62  err=0
+2026-10-30 11:44:14,896 INFO progress: total=1000  hits=0  partial=0  miss=1000  skip=0  err=0
+2026-10-30 11:44:29,368 INFO progress: total=1000  hits=5  partial=15  miss=912  skip=68  err=0
+2026-10-30 11:44:44,890 INFO progress: total=1050  hits=0  partial=0  miss=1050  skip=0  err=0
+2026-10-30 11:44:54,753 INFO progress: total=1050  hits=5  partial=16  miss=958  skip=71  err=0
+2026-10-30 11:45:09,598 INFO progress: total=1100  hits=0  partial=0  miss=1100  skip=0  err=0
+2026-10-30 11:45:21,437 INFO progress: total=1100  hits=5  partial=16  miss=1002  skip=77  err=0
+2026-10-30 11:45:41,041 INFO progress: total=1150  hits=0  partial=0  miss=1150  skip=0  err=0
+2026-10-30 11:45:52,416 INFO progress: total=1150  hits=6  partial=17  miss=1046  skip=81  err=0
+2026-10-30 11:46:10,228 INFO progress: total=1200  hits=0  partial=0  miss=1200  skip=0  err=0
+2026-10-30 11:46:21,455 INFO progress: total=1200  hits=8  partial=18  miss=1088  skip=86  err=0
+2026-10-30 11:46:39,343 INFO progress: total=1250  hits=0  partial=0  miss=1250  skip=0  err=0
+2026-10-30 11:46:48,577 INFO progress: total=1250  hits=9  partial=18  miss=1136  skip=87  err=0
+2026-10-30 11:47:03,247 INFO progress: total=1300  hits=0  partial=0  miss=1300  skip=0  err=0
+2026-10-30 11:47:12,226 INFO progress: total=1300  hits=9  partial=19  miss=1182  skip=90  err=0
+2026-10-30 11:47:32,695 INFO progress: total=1350  hits=0  partial=0  miss=1350  skip=0  err=0
+2026-10-30 11:47:39,416 INFO progress: total=1350  hits=10  partial=19  miss=1228  skip=93  err=0
+2026-10-30 11:47:55,354 INFO progress: total=1400  hits=0  partial=0  miss=1400  skip=0  err=0
+2026-10-30 11:48:02,108 INFO progress: total=1400  hits=10  partial=19  miss=1275  skip=96  err=0
+2026-10-30 11:48:22,615 INFO progress: total=1450  hits=0  partial=0  miss=1450  skip=0  err=0
+2026-10-30 11:48:42,234 INFO progress: total=1450  hits=13  partial=19  miss=1317  skip=101  err=0
+2026-10-30 11:48:51,304 INFO progress: total=1500  hits=0  partial=0  miss=1500  skip=0  err=0
+2026-10-30 11:49:05,116 INFO === DONE: total=1521  hits=0  partial=0  miss=1521  skip=0  err=0 ===
+2026-10-30 11:49:05,117 INFO Cover art added to 0 records (0.0% hit rate)
+2026-10-30 11:49:14,917 INFO progress: total=1500  hits=13  partial=21  miss=1362  skip=104  err=0
+2026-10-30 11:49:44,657 INFO progress: total=1550  hits=15  partial=22  miss=1406  skip=107  err=0
+2026-10-30 11:50:16,616 INFO progress: total=1600  hits=18  partial=23  miss=1448  skip=111  err=0
+2026-10-30 11:50:49,922 INFO progress: total=1650  hits=21  partial=26  miss=1487  skip=116  err=0
+2026-10-30 11:51:17,519 INFO progress: total=1700  hits=21  partial=27  miss=1530  skip=122  err=0
+2026-10-30 11:51:43,255 INFO progress: total=1750  hits=21  partial=27  miss=1578  skip=124  err=0
+2026-10-30 11:52:26,523 INFO progress: total=1800  hits=25  partial=29  miss=1619  skip=127  err=0
+2026-10-30 11:53:01,451 INFO progress: total=1850  hits=27  partial=31  miss=1664  skip=128  err=0
+2026-10-30 11:53:30,303 INFO progress: total=1900  hits=30  partial=31  miss=1709  skip=130  err=0
+2026-10-30 11:54:12,447 INFO progress: total=1950  hits=34  partial=32  miss=1751  skip=133  err=0
+2026-10-30 11:54:36,592 INFO progress: total=2000  hits=34  partial=32  miss=1798  skip=136  err=0
+2026-10-30 11:55:15,651 INFO progress: total=2050  hits=38  partial=33  miss=1843  skip=136  err=0
+2026-10-30 11:55:46,977 INFO progress: total=2100  hits=40  partial=36  miss=1884  skip=140  err=0
+2026-10-30 11:56:16,180 INFO progress: total=2150  hits=42  partial=37  miss=1925  skip=146  err=0
+2026-10-30 11:56:53,976 INFO progress: total=2200  hits=44  partial=38  miss=1970  skip=148  err=0
+2026-10-30 11:57:24,409 INFO progress: total=2250  hits=47  partial=39  miss=2013  skip=151  err=0
+2026-10-30 11:57:54,897 INFO progress: total=2300  hits=50  partial=39  miss=2054  skip=157  err=0
+2026-10-30 11:58:31,799 INFO progress: total=2350  hits=51  partial=40  miss=2096  skip=163  err=0
+2026-10-30 11:59:10,605 INFO progress: total=2400  hits=55  partial=41  miss=2139  skip=165  err=0
+2026-10-30 11:59:46,079 INFO progress: total=2450  hits=58  partial=43  miss=2181  skip=168  err=0
+2026-10-30 12:00:10,440 INFO progress: total=2500  hits=58  partial=44  miss=2228  skip=170  err=0
+2026-10-30 12:01:02,193 INFO progress: total=2550  hits=63  partial=45  miss=2267  skip=175  err=0
+2026-10-30 12:02:00,185 INFO progress: total=2600  hits=66  partial=48  miss=2306  skip=180  err=0
+2026-10-30 12:03:21,025 INFO progress: total=2650  hits=74  partial=50  miss=2344  skip=182  err=0
+2026-10-30 12:04:15,897 INFO progress: total=2700  hits=76  partial=52  miss=2387  skip=185  err=0
+2026-10-30 12:05:02,808 INFO progress: total=2750  hits=81  partial=54  miss=2426  skip=189  err=0
+2026-10-30 12:05:28,398 INFO progress: total=2800  hits=82  partial=54  miss=2471  skip=193  err=0
+2026-10-30 12:05:54,446 INFO progress: total=2850  hits=83  partial=55  miss=2513  skip=199  err=0
+2026-10-30 12:06:22,445 INFO progress: total=2900  hits=84  partial=55  miss=2558  skip=203  err=0
+2026-10-30 12:06:52,708 INFO progress: total=2950  hits=85  partial=55  miss=2604  skip=206  err=0
+2026-10-30 12:07:25,151 INFO progress: total=3000  hits=87  partial=58  miss=2649  skip=206  err=0
+2026-10-30 12:07:52,706 INFO progress: total=3050  hits=88  partial=58  miss=2694  skip=210  err=0
+2026-10-30 12:08:28,691 INFO progress: total=3100  hits=92  partial=59  miss=2736  skip=213  err=0
+2026-10-30 12:09:04,099 INFO progress: total=3150  hits=94  partial=60  miss=2781  skip=215  err=0
+2026-10-30 12:09:39,690 INFO progress: total=3200  hits=96  partial=61  miss=2822  skip=221  err=0
+2026-10-30 12:10:22,023 INFO === DONE: total=3245  hits=99  partial=61  miss=2862  skip=223  err=0 ===
+2026-10-30 12:10:22,023 INFO Cover art added to 99 records (3.1% hit rate)
+2026-10-30 12:37:14,287 INFO === MusicBrainz backfill start ===
+2026-10-30 12:37:14,288 INFO type=music  collection=georgeblood  limit=20  dry_run=True  workers=3
+2026-10-30 12:37:14,457 INFO Found credentials in shared credentials file: ~/.aws/credentials
+2026-10-30 12:37:15,151 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,152 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,152 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,152 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,152 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,152 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,152 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,239 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,239 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,239 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,239 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,239 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,324 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,324 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,324 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,324 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,324 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,413 ERROR Worker error: cannot access local variable 'seen' where it is not associated with a value
+2026-10-30 12:37:15,415 INFO Reached limit of 20 records
+2026-10-30 12:37:15,415 INFO === DONE: total=26  hits=0  partial=0  miss=0  skip=0  err=26 ===
+2026-10-30 12:37:15,415 INFO Cover art added to 0 records (0.0% hit rate)
+2026-10-30 12:37:24,806 INFO === MusicBrainz backfill start ===
+2026-10-30 12:37:24,806 INFO type=music  collection=georgeblood  limit=20  dry_run=True  workers=3
+2026-10-30 12:37:24,812 INFO Resuming from saved token
+2026-10-30 12:37:24,950 INFO Found credentials in shared credentials file: ~/.aws/credentials
+2026-10-30 12:37:34,964 INFO DRY-RUN would update TRK-IA-78_sneaky-pete_bull-moose-jackson-and-his-buffalo-bearcats-sally-nix_gbia0560777b: ['cover_art_url', 'musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:37:47,071 INFO DRY-RUN would update TRK-IA-78_wringin-and-twistin_frankie-trumbauer-with-bix-beiderbecke-ed-lang-trumbauer-waller_gbia0553095b: ['musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:37:48,667 INFO Reached limit of 20 records
+2026-10-30 12:37:48,667 INFO === DONE: total=22  hits=1  partial=1  miss=17  skip=3  err=0 ===
+2026-10-30 12:37:48,667 INFO Cover art added to 1 records (4.5% hit rate)
+2026-10-30 12:38:20,396 INFO === MusicBrainz backfill start ===
+2026-10-30 12:38:20,397 INFO type=music  collection=georgeblood  limit=50  dry_run=True  workers=3
+2026-10-30 12:38:20,403 INFO Resuming from saved token
+2026-10-30 12:38:20,536 INFO Found credentials in shared credentials file: ~/.aws/credentials
+2026-10-30 12:38:32,844 INFO DRY-RUN would update TRK-IA-78_the-drum-major_peter-dawson-newton_gbia0552526b: ['musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:39:05,947 INFO DRY-RUN would update TRK-IA-78_just-the-other-day_harry-cool-and-his-orchestra-harry-cool-evans-groom-johnson_gbia0555403b: ['musicbrainz_artist_id', 'mb_tags', 'musicbrainz_recording_id']
+2026-10-30 12:39:13,252 INFO DRY-RUN would update TRK-IA-78_deep-purple_hutch-his-charm-music-mitchell-parish-de-rose_gbia3042644a: ['musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:39:23,971 INFO DRY-RUN would update TRK-IA-78_sacro-monte-cinq-danses-gitaras_george-copeland-j-turina_gbia0552408b: ['musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:39:23,971 INFO progress: total=50  hits=0  partial=4  miss=44  skip=2  err=0
+2026-10-30 12:39:23,973 INFO Reached limit of 50 records
+2026-10-30 12:39:23,973 INFO === DONE: total=50  hits=0  partial=4  miss=44  skip=2  err=0 ===
+2026-10-30 12:39:23,973 INFO Cover art added to 0 records (0.0% hit rate)
+2026-10-30 12:39:30,535 INFO === MusicBrainz backfill start ===
+2026-10-30 12:39:30,535 INFO type=music  collection=georgeblood  limit=50  dry_run=True  workers=3
+2026-10-30 12:39:30,541 INFO Resuming from saved token
+2026-10-30 12:39:30,681 INFO Found credentials in shared credentials file: ~/.aws/credentials
+2026-10-30 12:39:50,313 INFO DRY-RUN would update TRK-IA-78_nutcracker-suite-part-two_toscanini-and-the-nbc-symphony-orchestra-tchaikovsky_gbia0546793b: ['cover_art_url', 'musicbrainz_artist_id', 'mb_tags', 'musicbrainz_recording_id']
+2026-10-30 12:40:02,494 INFO DRY-RUN would update TRK-IA-78_give-me-that-old-slow-drag_trixie-smith-and-the-jazz-masters-tom-delaney_gbia0545015a: ['cover_art_url', 'musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:40:11,598 INFO DRY-RUN would update TRK-IA-78_cuban-carnival_irving-fields-trio-irving-fields_gbia0561601b: ['cover_art_url', 'musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:40:14,963 INFO DRY-RUN would update TRK-IA-78_didja-ever_mary-small-mary-small-curtis-mizzy-vic-mizzy_gbia0555681a: ['musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:40:29,025 INFO DRY-RUN would update TRK-IA-78_bugle-call-rag_teddy-wilson-quintet-teddy-wilson-c-shavers-al-hall-specs-powell-red_gbia3043181a: ['cover_art_url', 'musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:40:33,992 INFO progress: total=50  hits=4  partial=1  miss=42  skip=3  err=0
+2026-10-30 12:40:37,555 INFO DRY-RUN would update TRK-IA-78_just-another-kiss_franklyn-baur-davis-coots_gbia3041378a: ['musicbrainz_artist_id', 'musicbrainz_recording_id']
+2026-10-30 12:40:37,555 INFO Reached limit of 50 records
+2026-10-30 12:40:37,557 INFO === DONE: total=54  hits=4  partial=2  miss=45  skip=3  err=0 ===
+2026-10-30 12:40:37,557 INFO Cover art added to 4 records (7.4% hit rate)

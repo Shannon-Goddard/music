@@ -20,8 +20,8 @@ This document is the master engineering blueprint for the platform. It reflects 
 | Ingestion — Jamendo | ✅ Done | 35,025 CC tracks, 47 genre tags (taxonomy-informed re-sweep) |
 | Ingestion — Wikimedia Commons | ✅ Done | 3,559 tracks — 17 genre categories (added soul, r&b), CC audio |
 
-| Ingestion — Freesound | ✅ Done | In progress — 24 genre tags, CDN-hosted HQ MP3 previews |
-| **Total catalog** | **~80,600+ tracks** | IA: 42,037 — Jamendo: 35,025 — Wikimedia: 3,559 — Freesound: growing |
+| Ingestion — Freesound | ✅ Done | 24 genre tags, CDN-hosted HQ MP3 previews |
+| **Total catalog** | **~80,600+ tracks (growing)** | IA: 42,037 — Jamendo: 35,025 — Wikimedia: 3,559 — Freesound: in progress |
 | Ingestion — ccMixter | ❌ Removed | CORS 403 on content server — unplayable |
 | `content_type` classification | ✅ Done | music / podcast / lecture / audiobook / interview / other |
 | `language` field | ✅ Done | ISO 639-2 stored per record, null = language-agnostic |
@@ -31,10 +31,10 @@ This document is the master engineering blueprint for the platform. It reflects 
 | API — `/radio` | ✅ Live | `genre=`, `limit=` — random sample, auto-plays in UI |
 
 | Lambda memory | ✅ 1024MB | All Lambdas, 30s timeout |
-| API — `/stats` | ✅ Live | ~80,600+ total — IA: 42,037, Jamendo: 35,025, Wikimedia: 3,559, Freesound: growing |
+| API — `/stats` | ✅ Live | total_tracks, by_platform, by_type, top_genres — live count |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
 | Icons | ✅ Done | Real PNG icons, apple-touch-icon → `logo-180.png` (solid bg) |
-| Service worker | ✅ Fixed | Cache `v9`, 206 fix, offline pre-cache next 2 tracks |
+| Service worker | ✅ Live | Cache `v9`, 206 fix, offline pre-cache next 2 tracks |
 | Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
 | Attribution ⓘ sheet | ✅ Live | Bottom sheet on every track row — license, attribution, copy, download |
 | Continue where left off | ✅ Live | 10s position write, resume bar shows track + timestamp, seeks on resume |
@@ -106,7 +106,9 @@ This document is the master engineering blueprint for the platform. It reflects 
 
 `language` is ISO 639-2 (`eng`, `fra`, `spa`, etc.) or absent for language-agnostic content (most music). The API `lang=eng` filter matches `language=eng` OR no language field.
 
-Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `musicbrainz_artist_id`.
+Future fields (not yet populated): `bpm`, `acoustid_fingerprint`, `musicbrainz_artist_id`.
+
+`mood` is populated for Jamendo tracks via `musicinfo.speed` (low/medium/high).
 
 ---
 
@@ -181,7 +183,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 
 ### Phase 5: PWA & Cross-Device Playback ✅ Complete
 
-- PWA manifest + service worker — cache `v4`, 206 fix, offline pre-cache next 2 tracks
+- PWA manifest + service worker — cache `v9`, 206 fix, offline pre-cache next 2 tracks
 - Real PNG icons — favicon, PWA splash, apple-touch-icon
 - Media Session API — Bluetooth / lock screen / car stereo controls
 - AirPlay — zero-config via `<audio>` element
@@ -258,7 +260,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 - Resume bar on home shows track title + saved timestamp, calls `playAt()` on click
 
 ### Service Worker (`service-worker.js`)
-- Cache `v4` — shell assets cached on install, includes `utils.js`
+- Cache `v9` — shell assets cached on install, includes `utils.js`
 - 206 Partial Content responses skipped in both `_cacheFirst` and `PRECACHE_AUDIO`
 - `PRECACHE_AUDIO` message handler — pre-fetches next 2 track URLs from player on every play
 - API calls always network-only
@@ -292,7 +294,7 @@ Future fields (not yet populated): `bpm`, `mood`, `acoustid_fingerprint`, `music
 | Spotube | ❌ Not applicable | 0 | YouTube client — ToS prohibits use, no CC licensing |
 | MusicFree | ❌ Not applicable | 0 | Plugin-based player wrapping copyrighted Chinese streaming services |
 | Pixabay | ❌ No audio API | 0 | Images/video API only — music section not in API |
-| Freesound | ������ In progress | growing | 24 genre tags, CDN HQ MP3 previews, duration native, CC-licensed |
+| Freesound | ✅ Done | growing | 24 genre tags, CDN HQ MP3 previews, duration native, CC-licensed |
 | MusicBrainz | 🔜 Planned | — | Metadata enrichment only, not a track source |
 
 ### Source Vetting Criteria
@@ -303,14 +305,14 @@ A source is only ingested if:
 
 ### Ingest Commands (per collection, run in separate terminals)
 ```
+python -u tests\test_ingest_ia.py netlabels
+python -u tests\test_ingest_ia.py 78rpm
 python -u tests\test_ingest_ia.py opensource_audio
 python -u tests\test_ingest_ia.py audio_music
 python -u tests\test_ingest_ia.py georgeblood
 python -u tests\test_ingest_ia.py audio_bookspoetry
 python -u tests\test_ingest_ia.py librivoxaudio
 
-# Resume mid-run
-python -u tests\test_ingest_ia.py opensource_audio --start-page 150
 # Resume mid-run
 python -u tests\test_ingest_ia.py opensource_audio --start-page 150
 
@@ -334,7 +336,7 @@ python -u tests\backfill_duration.py --workers 3
 
 | Issue | Status | Notes |
 |---|---|---|
-| Service worker 206 error | ✅ Fixed | Cache `v4` skips 206 responses |
+| Service worker 206 error | ✅ Fixed | Cache `v9` skips 206 responses |
 | ccMixter CORS 403 | ✅ Resolved | All records wiped from DB |
 | Lambda total count cache | ⚠️ Known | `total` caches ~5min after large DB changes |
 | Scroll broken (overflow-x:hidden) | ✅ Fixed | `overflow-x:clip` on body — `hidden` creates scroll container collapsing body height |
@@ -362,7 +364,7 @@ music/
 │   │   ├── jamendo_adapter.py      # Jamendo — 47 taxonomy-informed tags, 35,025 tracks
 │   │   ├── wikimedia_adapter.py    # Wikimedia Commons — 17 genre categories, 3,559 tracks
 │   │   ├── freesound_adapter.py    # Freesound — 24 genre tags, CDN HQ MP3 previews
-│   │   ├── ccmixter_adapter.py     # ccMixter — kept for reference, not used
+│   │   ├── ccmixter_adapter.py     # ccMixter — CORS 403, kept for reference only
 │   │   ├── normalizer.py           # ALLOWED_PLATFORMS gating (ia, jamendo, wikimedia, freesound)
 │   │   └── deduplicator.py
 │   └── requirements.txt
@@ -370,7 +372,7 @@ music/
 ├── frontend/                       # Deployed to gh-pages branch
 │   ├── index.html                  # EN/All language toggle in header
 │   ├── manifest.json               # PWA: 3 icon sizes
-│   ├── service-worker.js           # Cache v4, 206 fix, PRECACHE_AUDIO handler
+│   ├── service-worker.js           # Cache v9, 206 fix, PRECACHE_AUDIO handler
 │   ├── about.html
 │   ├── privacy.html
 │   ├── terms.html
@@ -435,35 +437,35 @@ music/
 
 ## 8. Pending Items (Prioritized)
 
-### 1. content_type backfill ������ Running
-- ~25,733 records sitting as `other` — mostly georgeblood + older IA items
+### 1. content_type backfill ✅ Done
 - `georgeblood` → `music`, `librivoxaudio` → `audiobook`, `audio_bookspoetry` → `audiobook`
-- Script: `tests/backfill_content_type.py` — scan + `update_item`, no API calls needed
+- Script: `tests/backfill_content_type.py`
 
-### 2. duration_sec backfill ������ Running
-- IA tracks missing `duration_sec` — gap visible now Wikimedia/Freesound tracks have it
-- Script: `tests/backfill_duration.py` — hits `archive.org/metadata/{id}`, rate-limited
-- Run overnight with `--workers 3`
 
-### 3. Freesound full ingest ������ Running
+### 2. duration_sec backfill ✅ Done
+- IA tracks missing `duration_sec` backfilled via `archive.org/metadata/{id}`
+- Script: `tests/backfill_duration.py`
+
+
+### 3. Freesound full ingest ✅ Done
 - 24 genre tags, CDN-hosted HQ MP3 previews, duration native, all CC-licensed
-- Script: `tests/test_ingest_freesound.py`
 - API key in Secrets Manager: `freesound-api`
 
-### 4. Genre normalization pass ������ Next
-- Radio endpoint queries `GenreIndex` by exact genre key — most IA tracks store raw subject tags
-  (e.g. `"jazz improvisation"`, `"78rpm"`) that don't match clean genre keys (`"jazz"`, `"rock"`)
-- IA taxonomy probed (`scripts/probe_ia_taxonomy.py`) — `ia_taxonomy.json` has full subject map
-- Build `tests/backfill_genre.py`: scan IA tracks, map subject tags → canonical genre keys,
-  `update_item` on `genre` field — fixes Radio section and GenreIndex query accuracy
 
-### 5. IA album-walk for deeper genre coverage ������
-- Current IA ingest uses tag-based search which hits a pagination ceiling
-- Walk `/albums?tags={genre}` → fetch all tracks per album — bypasses ceiling
-- Target genres thin on Jamendo: metal, punk, industrial, blues, hardcore
-- IA taxonomy JSON (`scripts/ia_taxonomy.json`) will inform the tag mapping
+### 4. Genre normalization ✅ Fixed at ingest
+- `_resolve_genre(subjects)` added to `ia_adapter.py` — maps IA subject tags to canonical genre keys at ingest time
+- `_GENRE_MAP` (15 genres, ordered by specificity) + `_TAG_TO_GENRE` reverse lookup built from `ia_taxonomy.json`
+- All new IA records get a clean genre key — no backfill needed for new ingest
+- Pre-fix IA records with raw subject tags remain as-is; low priority since Radio works on clean records
 
-### 6. Openverse ������ (when API recovers)
+
+### 5. IA ingest — page cap removed ✅
+- Fixed `PAGES` dict (100–2000 per collection) replaced with `999_999` sentinel
+- Stop condition is now 3 consecutive empty pages — same behavior as Jamendo
+- `--start-page N` resume flag available on all collections
+
+
+### 6. Openverse ⏸ Paused (when API recovers)
 - Search endpoint currently timing out — stats endpoint confirmed working
 - 644k Jamendo + 3.98M Wikimedia tracks not yet touched via their API
 - Would 10x+ the catalog — highest volume multiplier available
@@ -479,7 +481,7 @@ music/
 ### 9. MusicBrainz metadata enrichment
 - Backfill script exists (`scripts/backfill_musicbrainz.py`)
 - Hit rate ~3–4% on georgeblood/78rpm due to messy metadata
-- Lower priority until genre normalization and duration backfill are clean
+- Lower priority until catalog stabilizes after IA re-ingest
 
 ## 9. Key AWS Resources
 
@@ -500,7 +502,6 @@ music/
 | API Gateway ID | `9jxmxtjybb` |
 | API base URL | `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1` |
 | Jamendo credentials | Secrets Manager `music/jamendo` |
-| Freesound credentials | Secrets Manager `freesound-api` |
 | Freesound credentials | Secrets Manager `freesound-api` |
 | Frontend (live) | `https://shannon-goddard.github.io/music/` |
 | GitHub repo | `https://github.com/Shannon-Goddard/music` |

@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
 TABLE_NAME = "music-tracks"
-MAX_PAGES  = 25   # 25 pages × 200 tracks × 20 tags = up to 100,000 raw (many dupes across tags)
+MAX_PAGES  = 10_000  # effectively unlimited — loop breaks on empty page
 REGION     = "us-east-1"
 
 
@@ -63,7 +63,7 @@ def run():
         logger.info("--- Sweeping tag: %s ---", tag)
         tag_ingested = 0
 
-        for page in range(MAX_PAGES):
+        for page in range(MAX_PAGES):  # breaks early on empty page
             raw_records = adapter.fetch(page, tag=tag)
             if not raw_records:
                 logger.info("  [%s] empty page %d — moving to next tag", tag, page)

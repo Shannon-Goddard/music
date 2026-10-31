@@ -23,16 +23,8 @@ from ingestion.normalizer import normalize
 from ingestion.deduplicator import is_duplicate
 from db.dynamo_client import put_track
 
-# Max pages per collection (50 items/page)
-PAGES = {
-    "netlabels":         100,
-    "78rpm":             100,
-    "opensource_audio": 2000,
-    "audio_music":       500,
-    "georgeblood":       500,
-    "audio_bookspoetry": 200,
-    "librivoxaudio":     100,
-}
+# No hard cap — runs until 3 consecutive empty pages (same as Jamendo)
+PAGES = {k: 999_999 for k in IA_COLLECTIONS}
 
 
 def ingest_collection(adapter, collection, max_pages, start_page=0):

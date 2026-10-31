@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About — music by Loyal9</title>
-  <meta name="description" content="music is a free, open-licensed music platform built on the Internet Archive. Millions of tracks, no account required, free forever. Built by Shannon Goddard, Loyal9 LLC." />
+  <meta name="description" content="music is a free, open-licensed music platform built on the Internet Archive, Jamendo, Freesound, Wikimedia Commons, and ccMixter. No account required, free forever. Built by Shannon Goddard, Loyal9 LLC." />
   <meta property="og:title" content="About — music by Loyal9" />
-  <meta property="og:description" content="Free, open-licensed music. Millions of tracks from the Internet Archive. No account, no ads, free forever." />
+  <meta property="og:description" content="Free, open-licensed music from the Internet Archive, Jamendo, Freesound, Wikimedia Commons, and ccMixter. No account, no ads, free forever." />
   <meta property="og:type" content="website" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9834;</text></svg>" />
   <link rel="canonical" href="https://shannon-goddard.loyal9.app/music/about.html" />
@@ -115,11 +115,40 @@
     <h1>About music</h1>
     <p class="meta">Loyal9 LLC · Last updated: 2026</p>
 
-    <p>music is a free, open-licensed music platform. No account. No ads. No subscriptions. Just music — millions of tracks you can stream, explore, and save, free forever.</p>
+    <p>music is a free, open-licensed music platform. No account. No ads. No subscriptions. Just music — <span id="about-total">…</span> tracks you can stream, explore, and save, free forever.</p>
 
     <h2>The Music</h2>
-    <p>Every track on this platform is sourced from the <a href="https://archive.org" target="_blank" rel="noopener noreferrer">Internet Archive</a> — one of the world's largest digital libraries of freely available media. All content is either in the public domain or released under a Creative Commons license. Nothing here is pirated. Nothing here costs money to listen to.</p>
-    <p>The database behind this platform indexes hundreds of thousands of tracks across music, podcasts, lectures, audiobooks, and more — all legally free, all properly attributed.</p>
+    <p>Every track on this platform is sourced from one of five open-licensed archives. All content is either in the public domain or released under a Creative Commons license. Nothing here is pirated. Nothing here costs money to listen to.</p>
+
+    <div class="card">
+      <p class="card-title"><a href="https://archive.org" target="_blank" rel="noopener noreferrer">Internet Archive</a></p>
+      <p class="card-sub">archive.org</p>
+      <p>One of the world's largest digital libraries of freely available media. We index music, podcasts, lectures, audiobooks, and historical recordings across seven collections — netlabels, 78rpm, opensource_audio, audio_music, georgeblood, audio_bookspoetry, and librivoxaudio.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><a href="https://www.jamendo.com" target="_blank" rel="noopener noreferrer">Jamendo</a></p>
+      <p class="card-sub">jamendo.com</p>
+      <p>A platform for independent artists releasing music under Creative Commons licenses. We index tracks across rock, electronic, ambient, jazz, hip-hop, folk, classical, and more.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><a href="https://freesound.org" target="_blank" rel="noopener noreferrer">Freesound</a></p>
+      <p class="card-sub">freesound.org</p>
+      <p>A collaborative database of CC-licensed audio. We index music tracks (30s+) across genre tags including jazz, classical, electronic, ambient, folk, and more.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><a href="https://commons.wikimedia.org" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a></p>
+      <p class="card-sub">commons.wikimedia.org</p>
+      <p>The free media repository behind Wikipedia. We index audio files from genre categories including classical, jazz, blues, folk, electronic, and more — all public domain or CC-licensed.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><a href="https://ccmixter.org" target="_blank" rel="noopener noreferrer">ccMixter</a></p>
+      <p class="card-sub">ccmixter.org</p>
+      <p>A community music remixing site built entirely on Creative Commons licensing. Originals, remixes, samples, and a cappellas — all free to stream.</p>
+    </div>
 
     <h2>How It Works</h2>
     <p>Search by artist, album, or song title. Browse by genre, mood, or content type. Filter results by artist and album. Stream directly in your browser. Save tracks to your library. It works offline as a PWA — install it to your home screen and it behaves like a native app.</p>
@@ -175,13 +204,25 @@
       document.getElementById('menuDrawer').style.transform = 'translateX(100%)';
     }
   </script>
+  <script>
+    fetch('https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1/stats')
+      .then(r => r.json())
+      .then(d => {
+        const el = document.getElementById('about-total');
+        if (el && d.total_tracks) el.textContent = d.total_tracks.toLocaleString();
+      })
+      .catch(() => {
+        const el = document.getElementById('about-total');
+        if (el) el.textContent = 'thousands of';
+      });
+  </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": "About — music by Loyal9",
     "url": "https://shannon-goddard.loyal9.app/music/about.html",
-    "description": "music is a free, open-licensed music platform built on the Internet Archive. Built by Shannon Goddard, Loyal9 LLC, Riverside CA.",
+    "description": "music is a free, open-licensed music platform built on the Internet Archive, Jamendo, Freesound, Wikimedia Commons, and ccMixter. Built by Shannon Goddard, Loyal9 LLC, Riverside CA.",
     "author": {
       "@type": "Person",
       "name": "Shannon Goddard",

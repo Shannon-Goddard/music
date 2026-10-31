@@ -24,13 +24,16 @@ from decimal import Decimal
 
 import boto3
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from .base_adapter import BaseAdapter
 
 logger = logging.getLogger(__name__)
 
 API_BASE   = 'https://freesound.org/apiv2'
-RATE_SLEEP = 0.5   # seconds between requests
+RATE_SLEEP  = 1.0   # seconds between requests — bumped to reduce throttle risk
+RETRY_WAIT  = 60    # seconds to wait after a hard timeout before retrying
 PAGE_SIZE  = 150   # Freesound max is 150
 
 # CC licenses we accept
@@ -88,6 +91,18 @@ class FreesoundAdapter(BaseAdapter):
             self._api_key = _get_api_key()
         return self._api_key
 
+    def _make_session(self) -> requests.Session:
+        s = requests.Session()
+        retry = Retry(
+            total=3,
+            backoff_factor=2,          # 2s, 4s, 8s
+            status_forcelist={429, 500, 502, 503, 504},
+            allowed_methods={'GET'},
+            raise_on_status=False,
+        )
+        s.mount('https://', HTTPAdapter(max_retries=retry))
+        return s
+
     def fetch(self, page: int = 0) -> list[dict]:
         """Fetch one page. `page` arg ignored — uses internal cursor."""
         params = {
@@ -103,24 +118,37 @@ class FreesoundAdapter(BaseAdapter):
             'page_size': PAGE_SIZE,
             'page':      self._page,
         }
-        try:
-            r = requests.get(f'{API_BASE}/search/text/', params=params, timeout=20)
-            r.raise_for_status()
-            data = r.json()
-            time.sleep(RATE_SLEEP)
+        for attempt in range(3):
+            try:
+                r = self._make_session().get(
+                    f'{API_BASE}/search/text/', params=params, timeout=30
+                )
+                if r.status_code == 429:
+                    wait = int(r.headers.get('Retry-After', RETRY_WAIT))
+                    logger.warning('Freesound rate limited — waiting %ds', wait)
+                    time.sleep(wait)
+                    continue
+                r.raise_for_status()
+                data = r.json()
+                time.sleep(RATE_SLEEP)
 
-            if self._total is None:
-                self._total = data.get('count', 0)
-                logger.info('Freesound [%s]: %d total results', self.tag, self._total)
+                if self._total is None:
+                    self._total = data.get('count', 0)
+                    logger.info('Freesound [%s]: %d total results', self.tag, self._total)
 
-            results = data.get('results', [])
-            self._fetched += len(results)
-            self._page    += 1
-            return results
-        except requests.RequestException as e:
-            logger.error('Freesound fetch error tag=%s page=%d: %s', self.tag, self._page, e)
-            time.sleep(RATE_SLEEP)
-            return []
+                results = data.get('results', [])
+                self._fetched += len(results)
+                self._page    += 1
+                return results
+            except requests.RequestException as e:
+                wait = RETRY_WAIT * (attempt + 1)
+                logger.warning('Freesound timeout tag=%s page=%d attempt=%d — retrying in %ds',
+                               self.tag, self._page, attempt + 1, wait)
+                time.sleep(wait)
+        logger.error('Freesound tag=%s page=%d failed after 3 attempts — skipping',
+                     self.tag, self._page)
+        self._page += 1
+        return []
 
     def normalize(self, raw: dict) -> dict | None:
         fid = raw.get('id')

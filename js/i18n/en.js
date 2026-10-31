@@ -6,7 +6,7 @@ const en = {
   home_recent: "Recently Played",
   home_library: "My Library",
   home_new: "New Additions",
-  home_genre: "Genre Radio",
+  home_genre: "Genre",
   home_mood: "Mood Mix",
   player_play: "Play",
   player_pause: "Pause",

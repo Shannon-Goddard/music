@@ -85,12 +85,24 @@ def ingest_tag(tag: str, limit: int, dry_run: bool) -> tuple[int, int, int]:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tag',     default='', help='Single tag to ingest (default: all)')
-    parser.add_argument('--limit',   type=int, default=0, help='Max records per tag (0=unlimited)')
-    parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--tag',        default='', help='Single tag to ingest (default: all)')
+    parser.add_argument('--start-tag',  default='', help='Resume from this tag (skips earlier tags)')
+    parser.add_argument('--limit',      type=int, default=0, help='Max records per tag (0=unlimited)')
+    parser.add_argument('--dry-run',    action='store_true')
     args = parser.parse_args()
 
-    tags = [args.tag] if args.tag else FREESOUND_TAGS
+    if args.tag:
+        tags = [args.tag]
+    elif args.start_tag:
+        try:
+            idx = FREESOUND_TAGS.index(args.start_tag)
+            tags = FREESOUND_TAGS[idx:]
+            logger.info('Resuming from tag: %s (%d tags remaining)', args.start_tag, len(tags))
+        except ValueError:
+            logger.error('Unknown start-tag: %s', args.start_tag)
+            sys.exit(1)
+    else:
+        tags = FREESOUND_TAGS
 
     logger.info('=== Freesound ingest start ===')
     logger.info('tags=%s  limit=%s  dry_run=%s', tags, args.limit or 'unlimited', args.dry_run)

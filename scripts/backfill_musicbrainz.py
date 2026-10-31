@@ -25,6 +25,7 @@ import time
 import logging
 import argparse
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
@@ -140,33 +141,67 @@ def _mb_get(path: str, params: dict) -> dict | None:
         return None
 
 
+# Patterns common in 78rpm/georgeblood IA titles
+_TITLE_NOISE = re.compile(
+    r'\s*[\(\[].*?[\)\]]'          # (Part 1), [matrix XYZ]
+    r'|\s*-\s*take\s+\d+$'         # - take 2
+    r'|\s*,?\s*no\.?\s*\d+$',      # No. 3
+    re.IGNORECASE
+)
+_ARTIST_NOISE = re.compile(
+    r'\s+and\s+(his|her|the)\s+.*$'   # and His Orchestra / and Her Band
+    r'|\s+&\s+.*$'                      # & His Hot Five
+    r'|\s+with\s+.*$'                   # with Bix Beiderbecke / with the Rhythm Boys
+    r'|\s+feat\.?.*$'                   # feat. someone
+    r'|\s+accompanied\s+by.*$',         # accompanied by ...
+    re.IGNORECASE
+)
+
+
+def _clean_title(s: str) -> str:
+    return _TITLE_NOISE.sub('', s).strip()
+
+
+def _clean_artist(s: str) -> str:
+    return _ARTIST_NOISE.sub('', s).strip()
+
+
 def _search_recording(title: str, artist: str) -> dict | None:
     """Search MusicBrainz for a recording. Returns best match or None."""
-    # Escape special Lucene chars
     def _esc(s): return s.replace('"', '\\"').replace('(', '').replace(')', '')
 
-    query = f'recording:"{_esc(title)}" AND artist:"{_esc(artist)}"'
-    data  = _mb_get('recording', {
-        'query': query,
-        'limit': 5,
-        'fmt':   'json',
-    })
-    time.sleep(RATE_SLEEP)
-    if not data or not data.get('recordings'):
-        return None
+    # Try progressively looser queries
+    clean_title  = _clean_title(title)
+    clean_artist = _clean_artist(artist)
 
-    # Pick highest-score result that has releases
-    for rec in data['recordings']:
-        if rec.get('score', 0) < 70:
-            break
-        releases = rec.get('releases', [])
-        if releases:
-            return {
-                'recording_id':  rec.get('id'),
-                'release_id':    releases[0].get('id'),
-                'artist_credit': rec.get('artist-credit', []),
-                'tags':          rec.get('tags', []),
-            }
+    queries = [
+        f'recording:"{_esc(clean_title)}" AND artist:"{_esc(clean_artist)}"',
+        f'recording:"{_esc(clean_title)}" AND artist:"{_esc(artist)}"',
+        f'recording:"{_esc(title)}" AND artist:"{_esc(clean_artist)}"',
+    ]
+    # Deduplicate while preserving order
+    unique_queries, seen_q = [], set()
+    for q in queries:
+        if q not in seen_q:
+            unique_queries.append(q)
+            seen_q.add(q)
+
+    for query in unique_queries:
+        data = _mb_get('recording', {'query': query, 'limit': 5, 'fmt': 'json'})
+        time.sleep(RATE_SLEEP)
+        if not data or not data.get('recordings'):
+            continue
+        for rec in data['recordings']:
+            if rec.get('score', 0) < 60:
+                break
+            releases = rec.get('releases', [])
+            if releases:
+                return {
+                    'recording_id':  rec.get('id'),
+                    'release_id':    releases[0].get('id'),
+                    'artist_credit': rec.get('artist-credit', []),
+                    'tags':          rec.get('tags', []),
+                }
     return None
 
 

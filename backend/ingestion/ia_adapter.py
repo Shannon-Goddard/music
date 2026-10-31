@@ -18,6 +18,71 @@ FETCH_WORKERS   = 10   # parallel metadata + HEAD checks per page
 # Only ingest openly licensed audio
 ALLOWED_LICENSES = ("creativecommons", "publicdomain")
 
+# Ordered: first match wins. More specific genres before broader ones.
+_GENRE_MAP = [
+    ("metal",        {"metal", "heavy metal", "death metal", "black metal", "doom metal",
+                      "thrash", "thrash metal", "grindcore", "hardcore", "extreme metal",
+                      "progressive metal", "industrial metal", "sludge", "doom",
+                      "raw black metal", "blackened", "deathcore", "metalcore",
+                      "speed metal", "nu metal"}),
+    ("industrial",   {"industrial", "power electronics", "ebm", "rhythmic noise",
+                      "industrial music", "industrial noise", "post-industrial"}),
+    ("hip-hop",      {"rap", "hip - hop", "hip-hop", "hiphop", "hip hop",
+                      "underground rap", "underground hip - hop", "spanish rap",
+                      "alternative rap", "latin rap", "emo rap", "instrumental hip-hop",
+                      "boom bap", "trap", "lo-fi", "lofi"}),
+    ("experimental", {"experimental", "experimental music", "noise", "harsh noise",
+                      "avant garde", "avantgarde", "avant-garde", "musique concrete",
+                      "sound art", "electroacoustic", "abstract", "plunderphonics",
+                      "glitch", "microsound", "acousmatic", "sound collage"}),
+    ("electronic",   {"electronic", "electronica", "idm", "techno", "house", "deep house",
+                      "minimal techno", "acid", "acid techno", "electro", "vaporwave",
+                      "synthpop", "synthwave", "darkwave", "chiptune", "8bit",
+                      "breakcore", "dubstep", "drum & bass", "drumnbass", "breakbeat",
+                      "trance", "psytrance", "ambient techno", "dark electronic"}),
+    ("ambient",      {"ambient", "dark ambient", "drone", "soundscape", "soundscapes",
+                      "drone ambient", "space ambient", "ritual ambient", "noise ambient",
+                      "atmospheric", "meditation", "new age", "downtempo",
+                      "chillout", "chill out", "chill-out"}),
+    ("jazz",         {"jazz", "free jazz", "jazz+funk", "nujazz", "swing", "big band",
+                      "bebop", "smooth jazz", "acid jazz", "improvisation",
+                      "free improvisation", "improv"}),
+    ("classical",    {"classical", "classical music", "orchestral", "opera", "operetta",
+                      "choral", "symphony", "neoclassical", "contemporary classical",
+                      "20th century classical", "modern classical", "chamber",
+                      "piano", "organ", "violin", "baroque"}),
+    ("folk",         {"folk", "folk music", "folk dance", "experimental folk",
+                      "singer-songwriter", "singer songwriter", "acoustic", "country",
+                      "bluegrass", "celtic", "traditional", "oldtime", "old time",
+                      "neofolk", "americana", "alt-country"}),
+    ("blues",        {"blues", "delta blues", "chicago blues", "electric blues",
+                      "rhythm and blues", "rhythm & blues"}),
+    ("punk",         {"punk", "punk rock", "post-punk", "post punk", "hardcore punk",
+                      "anarcho punk", "oi", "street punk"}),
+    ("reggae",       {"reggae", "dub", "ska", "dancehall", "roots reggae", "rocksteady"}),
+    ("soul",         {"soul", "soul music", "motown", "funk", "neo soul"}),
+    ("rock",         {"rock", "classic rock", "alternative", "indie rock", "indie",
+                      "garage rock", "psychedelic rock", "progressive rock", "space rock",
+                      "post-rock", "post rock", "krautrock", "kraut rock", "noise rock",
+                      "art rock", "alternative rock", "rock and roll", "rock n roll",
+                      "rock & roll", "rockabilly", "stoner rock", "shoegaze", "grunge"}),
+    ("pop",          {"pop", "pop music", "indie pop", "dream pop", "chamber pop",
+                      "baroque pop", "art pop"}),
+]
+
+_TAG_TO_GENRE: dict[str, str] = {
+    t.lower(): genre for genre, tags in _GENRE_MAP for t in tags
+}
+
+
+def _resolve_genre(subjects: list) -> str:
+    """Map raw IA subject tags to a clean genre key, or return 'Unknown'."""
+    for tag in subjects:
+        mapped = _TAG_TO_GENRE.get(tag.lower().strip())
+        if mapped:
+            return mapped
+    return "Unknown"
+
 # Targeted collection queries
 IA_COLLECTIONS = {
     "netlabels": (
@@ -208,7 +273,7 @@ class IAAdapter(BaseAdapter):
             "artist_name":      creator,
             "album_id":         f"ALB-IA-{identifier}",
             "album_title":      raw.get("title") or identifier,
-            "genre":            self._first(subjects) or "Unknown",
+            "genre":            _resolve_genre(subjects),
             "tags":             subjects,
             "source_platform":  "internet_archive",
             "stream_url":       stream_url,

@@ -461,7 +461,7 @@
       <!-- Cache -->
       <div>
         <p class="text-[11px] text-white/35 uppercase tracking-wider mb-3">Cache</p>
-        <button onclick="_clearCache()"
+        <button onclick="_clearCache(this)"
                 class="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg transition"
                 style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
@@ -518,11 +518,10 @@
       if (window._playerSetCrossfade) window._playerSetCrossfade(cfOn, parseInt(val));
       document.getElementById('crossfade-dur-label').textContent = val + 's';
     }
-    function _clearCache() {
+    function _clearCache(btn) {
       caches.keys().then(keys => {
         const audio = keys.filter(k => k.includes('audio'));
         Promise.all(audio.map(k => caches.delete(k))).then(() => {
-          const btn = event.target.closest('button');
           btn.textContent = 'Cleared!';
           setTimeout(() => { btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Clear audio cache`; }, 2000);
         });
