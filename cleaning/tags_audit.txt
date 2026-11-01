@@ -1,0 +1,210 @@
+=== Coverage ===
+genre has value                  : 97,218
+genre empty, tags has value      : 0
+genre empty, tags also empty     : 0
+
+=== Sample raw tag strings (null-genre rows) ===
+
+=== Top 200 tag tokens (all rows) ===
+Token                                      Count
+--------------------------------------------------
+78rpm                                      19152
+acoustic                                   17272
+vocal                                      15634
+neutral                                    15172
+instrumental                               10475
+voice                                      10393
+electronic                                  9987
+librivox                                    9962
+audiobooks                                  9869
+disc recording                              9867
+national jukebox                            9867
+library of congress                         9867
+acoustic recording                          9867
+digital preservation                        9867
+happy                                       9247
+energetic                                   8335
+synthesizer                                 7968
+ambient                                     7710
+victor                                      7231
+music                                       5610
+bass                                        4804
+popular music                               4610
+rock                                        4506
+guitar                                      4451
+drums                                       4449
+piano                                       4184
+experimental                                4084
+hiphop                                      3827
+electricguitar                              3323
+reggae                                      3100
+pop                                         3010
+strings                                     2936
+bluesrock                                   2800
+columbia                                    2635
+sad                                         2430
+atmosphere                                  2416
+dance                                       2372
+noise                                       2284
+edm                                         2141
+ambience                                    2077
+jazz                                        2073
+loop                                        2058
+house                                       1967
+dark                                        1962
+indiepop                                    1899
+creative commons                            1755
+background                                  1723
+opera                                       1683
+ragtime                                     1675
+chillhop                                    1654
+cinematic                                   1626
+dreampop                                    1614
+drone                                       1579
+acousticguitar                              1568
+blues                                       1561
+peaceful                                    1554
+filmscore                                   1522
+classical                                   1425
+folk                                        1400
+indie                                       1393
+free music archive                          1392
+open music                                  1389
+vaibhav agarwal                             1389
+archiver                                    1389
+thisisforlearn                              1389
+beat                                        1381
+self-published work                         1317
+poetry                                      1286
+lofi                                        1286
+techno                                      1263
+atmospheric                                 1229
+calm                                        1210
+country                                     1187
+funk                                        1159
+easylistening                               1088
+ethnic music                                1070
+film                                        1051
+upbeat                                      1040
+electro                                     1029
+electronica                                 1022
+electrofunk                                 1009
+electroamplified                             985
+groovy                                       980
+soul                                         973
+chillout                                     960
+darkwave                                     960
+الإباضية                                     959
+واحة الإيمان                                 959
+ibadi                                        959
+wahat aleman                                 959
+philosophy                                   933
+classical music                              910
+corporate                                    891
+christian                                    887
+ambiance                                     879
+dub                                          871
+dubstep                                      869
+pd us expired                                866
+emotional                                    838
+poprock                                      829
+percussion                                   817
+eurodance                                    807
+jazzfunk                                     803
+synth                                        803
+pd old auto: no death date                   790
+piano music                                  782
+abstract                                     772
+drummachine                                  768
+dreamy                                       761
+industrial                                   747
+field-recording                              741
+rnb                                          740
+literature                                   740
+صوتيات                                       738
+downtempo                                    725
+singersongwriter                             716
+love                                         713
+free                                         712
+nature                                       680
+radio                                        672
+improvisation                                672
+gospel                                       669
+soft                                         668
+uplifting                                    665
+orchestra                                    656
+children                                     652
+relaxing                                     647
+trap                                         647
+fox trot                                     645
+neoclassical                                 644
+orchestral                                   641
+8bit                                         635
+rap                                          624
+psychedelic                                  620
+world                                        619
+saxophone                                    617
+adventure                                    616
+newage                                       611
+surfrock                                     606
+soundscape                                   602
+cc-pd-mark                                   594
+alternativerock                              591
+bpm                                          575
+pd-old missing sdc copyright status          567
+game                                         564
+podcast                                      556
+netlabel                                     548
+dramatic                                     545
+electricpiano                                535
+mystery                                      532
+horror                                       532
+audio sculpted psychedelia                   530
+urban                                        522
+soundscapes                                  522
+deep                                         519
+ethnic characterizations                     518
+plato                                        514
+brass                                        507
+bells                                        506
+romance                                      506
+drum                                         501
+flute                                        500
+wind                                         500
+creepy                                       497
+dark ambient                                 496
+computer                                     492
+idm                                          489
+triphop                                      482
+beats                                        475
+comedy                                       471
+electricbass                                 471
+swing                                        468
+electropop                                   466
+indierock                                    466
+england                                      454
+advertising                                  449
+commercial                                   448
+120                                          448
+musical theater                              445
+drama                                        442
+inspirational                                442
+remix                                        437
+humorous songs                               435
+concert                                      430
+lounge                                       425
+christmas                                    423
+art                                          422
+chill                                        421
+acousticbass                                 420
+waltz                                        419
+generative                                   416
+ska                                          414
+trumpet                                      409
+nujazz                                       406
+spoken                                       406
+copyrightfreemusic                           405
+fiction                                      404
+religious                                    400
+sound                                        399
+traditional                                  398

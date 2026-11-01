@@ -1,0 +1,39 @@
+TOTAL: 97,218
+  ASCII only (clean):              0  (0.0%)
+  Clean Unicode (real text):  97,216  (100.0%)
+  Mojibake (broken encoding):      2  (0.0%)
+
+--- MOJIBAKE BY LANGUAGE ---
+  none            2
+
+--- MOJIBAKE SAMPLES ---
+  lang=  platform=internet_archive  type=music
+  title:  ØÜð - Fanny
+  artist: Unknown Artist
+
+  lang=  platform=internet_archive  type=music
+  title:  ØÜð - Folkoteque
+  artist: Unknown Artist
+
+
+--- CLEAN NON-ASCII SAMPLES (would survive) ---
+  lang=eng  platform=internet_archive
+  title:  Ticonderoga; A Story of Early Frontier Life in the Mohawk Valley
+  artist: George Payne Rainsford James
+
+  lang=  platform=internet_archive
+  title:  Multilingual Short Works Collection 020 - Poetry & Prose
+  artist: Various
+
+  lang=eng  platform=internet_archive
+  title:  Short Story Collection 096
+  artist: Various
+
+  lang=eng  platform=internet_archive
+  title:  Short Story Collection Vol. 095
+  artist: Various
+
+  lang=eng  platform=internet_archive
+  title:  Freaks on the Fells: Three Months' Rustication, Story 1
+  artist: R. M. Ballantyne
+

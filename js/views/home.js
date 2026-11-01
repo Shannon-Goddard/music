@@ -7,15 +7,7 @@ import { isSaved, toggleSaved } from '../library.js';
 import { artThumb, coverGradient } from '../utils.js';
 import en from '../i18n/en.js';
 
-const GENRES = ['Electronic', 'Rock', 'Ambient', 'Experimental', 'Blues', 'Jazz', 'Industrial', 'Classical', 'Hip-Hop', 'Folk'];
-
-const MOODS = [
-  { label: 'Energetic', value: 'energetic' },
-  { label: 'Calm',      value: 'calm' },
-  { label: 'Melancholic', value: 'melancholic' },
-  { label: 'Happy',     value: 'happy' },
-  { label: 'Intense',   value: 'intense' },
-];
+const GENRES = ['Electronic', 'Rock', 'Ambient', 'Experimental', 'Blues', 'Jazz', 'Industrial', 'Classical', 'Hip-Hop', 'Folk', 'Country'];
 
 const CONTENT_TYPES = [
   { label: 'Music',      value: 'music',      icon: _svgMusic() },
@@ -23,7 +15,6 @@ const CONTENT_TYPES = [
   { label: 'Interviews', value: 'interview',  icon: _svgMic() },
   { label: 'Lectures',   value: 'lecture',    icon: _svgBook() },
   { label: 'Audiobooks', value: 'audiobook',  icon: _svgBook() },
-  { label: 'Other',      value: 'other',      icon: _svgDots() },
 ];
 
 export async function render(app) {
@@ -59,13 +50,6 @@ export async function render(app) {
       <h2 class="section-label">Radio</h2>
       <div class="scroll-row">
         ${GENRES.map(g => _radioChip(g)).join('')}
-      </div>
-    </section>
-
-    <section class="mb-8">
-      <h2 class="section-label">${en.home_mood}</h2>
-      <div class="scroll-row">
-        ${MOODS.map(m => _chip({ label: m.label, attr: 'data-genre', value: m.value })).join('')}
       </div>
     </section>
 
@@ -389,9 +373,6 @@ function _svgBook() {
   return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
 }
 
-function _svgDots() {
-  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`;
-}
 
 function _isSaved(track_id) { return isSaved(track_id); }
 

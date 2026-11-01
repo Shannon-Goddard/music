@@ -1,0 +1,22 @@
+TOTAL: 99,220  BAD (actual non-ASCII chars in URL): 2,013  (2.0%)
+
+https://archive.org/download/girardinjulesunefameusejournee/Girardin_Jules_-_Une_Fameuse_Journée.mp3
+
+https://archive.org/download/1_20261006_20261006_1115/গড়ল্প (1).mp3
+
+https://archive.org/download/pirate_tapes_discontinuite/PIRATE Tapes - Discontinuité - 01 L'Aorte des Fantômes.mp3
+
+https://archive.org/download/grandeur-de-lhomme-blaise-pascal-pensees-1670/GrandeurDeLHomme_BlaisePascal_Pensées_(1670).mp3
+
+https://archive.org/download/audiobook-part-1-ne/The Recovery Kernel- कार्यान्वयन गाइड।_audiobook_NE.mp3
+
+https://archive.org/download/l-epine-ernest-la-legende-de-croque-mitaine-3/L_Epine_Ernest_-_La_Légende_de_Croque_Mitaine_Chap1.mp3
+
+https://archive.org/download/audiobook-part-3-mr/द रिकव्हरी कर्नल- आरोग्य सेवा पुरवठादारांसाठी माहिती पुस्त_audiobook_MR.mp3
+
+https://archive.org/download/l-epine-ernest-la-legende-de-croque-mitaine-II/L'Epine_Ernest_-_La_Légende_de_Croque_Mitaine_chap1.mp3
+
+https://archive.org/download/HeleneDuGouezouVrazPourquoiLaMerEstSale/Helene_du_Gouezou_Vraz_-_Pourquoi_la_Mer_est_salée.mp3
+
+https://archive.org/download/HlneDuGouezouVrazOdetteEtMarionMharistesAuxSemellesDeVent/Hélène_du_Gouezou_Vraz_-_Odette_et_Marion_Méharistes_aux_Semelles_de_Vent.mp3
+

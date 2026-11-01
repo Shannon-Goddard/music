@@ -33,6 +33,10 @@ REGION = os.environ.get('AWS_REGION', 'us-east-1')
 # collection → content_type override
 COLLECTION_RULES = {
     'georgeblood':       'music',
+    '78rpm':             'music',
+    'netlabels':         'music',
+    'opensource_audio':  'music',
+    'audio_music':       'music',
     'librivoxaudio':     'audiobook',
     'audio_bookspoetry': 'audiobook',
 }
@@ -43,7 +47,7 @@ def _resolve(item: dict) -> str | None:
     collection = item.get('ia_collection', '')
     if collection in COLLECTION_RULES:
         return COLLECTION_RULES[collection]
-    if item.get('source_platform') == 'wikimedia':
+    if item.get('source_platform') in ('wikimedia', 'jamendo', 'freesound'):
         return 'music'
     return None
 
