@@ -19,7 +19,6 @@ This document is the master engineering blueprint for the platform. It reflects 
 | Ingestion — IA librivoxaudio | ✅ Done | 3,819 records (1,096 deduped) |
 | Ingestion — Jamendo | ✅ Done | 35,025 CC tracks, 47 genre tags (taxonomy-informed re-sweep) |
 | Ingestion — Wikimedia Commons | ✅ Done | 3,559 tracks — 17 genre categories (added soul, r&b), CC audio |
-
 | Ingestion — Freesound | ✅ Done | 24 genre tags, CDN-hosted HQ MP3 previews |
 | **Total catalog** | **~80,600+ tracks (growing)** | IA: 42,037 — Jamendo: 35,025 — Wikimedia: 3,559 — Freesound: in progress |
 | Ingestion — ccMixter | ❌ Removed | CORS 403 on content server — unplayable |
@@ -29,7 +28,6 @@ This document is the master engineering blueprint for the platform. It reflects 
 | API — `/artists/search` | ✅ Live | `q=` → `{ artist_id, artist_name, track_count }` |
 | API — `/albums/search` | ✅ Live | `artist_id=` (GSI) or `q=` (scan) |
 | API — `/radio` | ✅ Live | `genre=`, `limit=` — random sample, auto-plays in UI |
-
 | Lambda memory | ✅ 1024MB | All Lambdas, 30s timeout |
 | API — `/stats` | ✅ Live | total_tracks, by_platform, by_type, top_genres — live count |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
