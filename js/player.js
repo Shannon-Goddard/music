@@ -48,7 +48,7 @@ export function play(track) {
   if (!track?.stream_url) return;
   audio.src = track.stream_url;
   audio.playbackRate = _speed;
-  audio.play().catch(e => console.warn('Playback error:', e));
+  audio.play().catch(e => { if (e.name !== 'AbortError') console.warn('Playback error:', e); });
   if (_crossfadeEnabled && _gainNode) _resetGain();
   _updateUI(track);
   _updateMediaSession(track);

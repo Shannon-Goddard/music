@@ -1,49 +1,145 @@
-const BASE_URL = "https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1";
-const PAGE_SIZE = 20;
+/**
+ * api.js — static JSON backend
+ *
+ * Data lives in /data/ on GitHub Pages:
+ *   data/genre/<genre>.json   — tracks by canonical genre
+ *   data/type/<type>.json     — tracks by content_type (no music — use genre)
+ *   data/search-index.json    — {track_id, title, artist_name} for Fuse.js
+ *   data/index.json           — manifest
+ *
+ * All functions return { results: [], total } to match the InfiniteScroll contract.
+ */
 
-// Language filter — 'eng' = English + language-agnostic (default), 'all' = no filter
+export const PAGE_SIZE = 20;
+
+// ── Language filter ───────────────────────────────────────
+
 let _lang = localStorage.getItem('music_lang') || 'eng';
 export function getLang() { return _lang; }
 export function setLang(val) { _lang = val; localStorage.setItem('music_lang', val); }
 
-function _langParam() { return _lang === 'all' ? '&lang=all' : ''; }
-
-async function request(path) {
-  const response = await fetch(`${BASE_URL}${path}`);
-  if (!response.ok) throw new Error(`API error ${response.status} on ${path}`);
-  return response.json();
+function _langMatch(track) {
+  if (_lang === 'all') return true;
+  return !track.language || track.language === 'eng';
 }
 
-/** GET /tracks/search?q={query}&limit={n}&offset={n} */
-export function searchTracks(query, limit = PAGE_SIZE, offset = 0) {
-  return request(`/tracks/search?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}${_langParam()}`);
+// ── Chunk cache — load each file once ────────────────────
+
+const _cache = {};
+
+async function _load(path) {
+  if (_cache[path]) return _cache[path];
+  const base = window.location.pathname.startsWith('/music') ? '/music' : '';
+  const res = await fetch(`${base}/${path}`);
+  if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
+  _cache[path] = await res.json();
+  return _cache[path];
 }
 
-/** GET /tracks/search?genre={genre}&limit={n}&offset={n} */
-export function searchByGenre(genre, limit = PAGE_SIZE, offset = 0) {
-  return request(`/tracks/search?genre=${encodeURIComponent(genre)}&limit=${limit}&offset=${offset}${_langParam()}`);
+function _page(tracks, offset) {
+  const filtered = tracks.filter(_langMatch);
+  return {
+    results: filtered.slice(offset, offset + PAGE_SIZE),
+    total:   filtered.length,
+  };
 }
 
-/** GET /tracks/search?type={type}&limit={n}&offset={n} */
-export function searchByType(type, limit = PAGE_SIZE, offset = 0) {
-  return request(`/tracks/search?type=${encodeURIComponent(type)}&limit=${limit}&offset=${offset}${_langParam()}`);
+// ── Public API ────────────────────────────────────────────
+
+/** Genre filter — loads data/genre/<genre>.json */
+export async function searchByGenre(genre, limit = PAGE_SIZE, offset = 0) {
+  const tracks = await _load(`data/genre/${genre.toLowerCase()}.json`);
+  return _page(tracks, offset);
 }
 
-/** GET /artists/search?q={query} */
-export function searchArtists(query) {
-  return request(`/artists/search?q=${encodeURIComponent(query)}`);
+/** Content type filter — loads data/type/<type>.json */
+export async function searchByType(type, limit = PAGE_SIZE, offset = 0) {
+  const tracks = await _load(`data/type/${type}.json`);
+  return _page(tracks, offset);
 }
 
-/** GET /albums/search?artist_id={id} or ?q={query} */
-export function searchAlbums({ artistId, query } = {}) {
-  if (artistId) return request(`/albums/search?artist_id=${encodeURIComponent(artistId)}`);
-  if (query)    return request(`/albums/search?q=${encodeURIComponent(query)}`);
-  throw new Error("searchAlbums requires artistId or query");
+/** Text search — Fuse.js against search-index, then hydrate from genre/type chunks */
+export async function searchTracks(query, limit = PAGE_SIZE, offset = 0) {
+  if (!query?.trim()) return { results: [], total: 0 };
+
+  const index = await _load('data/search-index.json');
+
+  // Lazy-load Fuse from CDN
+  if (!window.Fuse) {
+    await _loadScript('https://cdn.jsdelivr.net/npm/fuse.js@7/dist/fuse.min.js');
+  }
+
+  const fuse = new window.Fuse(index, {
+    keys: ['title', 'artist_name'],
+    threshold: 0.35,
+    distance: 100,
+  });
+
+  const hits = fuse.search(query).map(r => r.item);
+  const filtered = hits.filter(h => {
+    // language filter — search index doesn't have language, so we can't filter here
+    // full track objects are returned from _hydrate which has language
+    return true;
+  });
+
+  const page = filtered.slice(offset, offset + PAGE_SIZE);
+  const hydrated = await _hydrateMany(page);
+  const langFiltered = hydrated.filter(_langMatch);
+
+  return { results: langFiltered, total: filtered.length };
 }
 
-/** GET /radio?genre={genre}&limit={n} */
-export function getRadio(genre, limit = 50) {
-  return request(`/radio?genre=${encodeURIComponent(genre)}&limit=${limit}`);
+/** Radio — load genre chunk, shuffle, return limit tracks */
+export async function getRadio(genre, limit = 50) {
+  const tracks = await _load(`data/genre/${genre.toLowerCase()}.json`);
+  const filtered = tracks.filter(_langMatch);
+  const shuffled = [...filtered].sort(() => Math.random() - 0.5);
+  return { tracks: shuffled.slice(0, limit) };
 }
 
-export { PAGE_SIZE };
+/** Stats — from index.json manifest */
+export async function getStats() {
+  return _load('data/index.json');
+}
+
+// ── Hydration — look up full track objects from chunks ────
+
+// Build a flat lookup map lazily
+let _trackMap = null;
+
+async function _buildTrackMap() {
+  if (_trackMap) return _trackMap;
+  const index = await _load('data/index.json');
+  _trackMap = {};
+
+  // Load all genre chunks and type chunks to build the map
+  const genreLoads = Object.keys(index.genres).map(g =>
+    _load(`data/genre/${g}.json`).then(tracks => {
+      tracks.forEach(t => { _trackMap[t.track_id] = t; });
+    })
+  );
+  const typeLoads = Object.keys(index.types).map(c =>
+    _load(`data/type/${c}.json`).then(tracks => {
+      tracks.forEach(t => { _trackMap[t.track_id] = t; });
+    })
+  );
+  await Promise.all([...genreLoads, ...typeLoads]);
+  return _trackMap;
+}
+
+async function _hydrateMany(indexItems) {
+  const map = await _buildTrackMap();
+  return indexItems.map(item => map[item.track_id]).filter(Boolean);
+}
+
+// ── Utility ───────────────────────────────────────────────
+
+function _loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}

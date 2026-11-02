@@ -1,6 +1,32 @@
-﻿# Architecture & Technical Roadmap: Infinite Meta-Index Music Platform
+# Architecture & Technical Roadmap: Infinite Meta-Index Music Platform
 
-This document is the master engineering blueprint for the platform. It reflects the current live state of the project and the forward roadmap.
+---
+
+## ⚠️ Project Pivot Notice
+
+This document is preserved in full as a reusable blueprint for any developer who wants to implement this architecture at scale. The serverless infrastructure (API Gateway, Lambda, WAF, DynamoDB) was fully designed, built, and deployed — it works.
+
+**Why we pivoted:**
+The original roadmap was designed for a catalog of 500k+ tracks. After completing all ingestion and 4 cleaning passes, the final catalog landed at **96,338 tracks** — with only ~57k having a resolved genre and ~67k classified as music. At that scale, the serverless stack is operational overhead that isn't justified:
+
+- API Gateway + Lambda costs money at real traffic; a static catalog doesn't need server-side compute
+- Cold starts add latency that a pre-built client-side index eliminates
+- The primary growth path (Openverse — 4M+ tracks) has an indefinitely broken search endpoint with no public recovery timeline
+- All other viable CC-licensed, CORS-clean sources with real APIs have been exhausted
+
+**The decision:**
+- ✅ DynamoDB table deleted — `catalog_final.csv` (96,338 rows) is the source of truth, committed to the repo
+- ✅ API Gateway + all Lambdas torn down
+- ✅ WAF WebACL detached and deleted
+- ✅ Frontend rebuilt against a static JSON export served from GitHub Pages
+- ✅ Client-side search via Fuse.js replaces all Lambda query patterns
+
+**For other developers:**
+Everything below this notice is the full working blueprint. If your project has the scale to justify it — pick it up and run.
+
+---
+
+This document is the master engineering blueprint for the platform. It reflects the state of the project at the point of the pivot.
 
 ---
 
@@ -8,8 +34,9 @@ This document is the master engineering blueprint for the platform. It reflects 
 
 | Layer | Status | Detail |
 |---|---|---|
-| DynamoDB table | ✅ Live | `music-tracks`, `us-east-1` |
-| GSIs | ✅ All 7 ACTIVE | See Section 2 |
+| DynamoDB table | ✅ Deleted | `catalog_final.csv` is source of truth |
+| API Gateway + Lambdas | ✅ Torn down | Replaced by static JSON |
+| WAF WebACL | ✅ Deleted | No longer needed |
 | Ingestion — IA netlabels | ✅ Done | 4,734 records |
 | Ingestion — IA 78rpm | ✅ Done | 4,884 records |
 | Ingestion — IA opensource_audio | ✅ Done | 7,497 records (1,739 deduped) |
@@ -17,29 +44,22 @@ This document is the master engineering blueprint for the platform. It reflects 
 | Ingestion — IA georgeblood | ✅ Done | 9,697 records (4 deduped) |
 | Ingestion — IA audio_bookspoetry | ✅ Done | 6,144 records (3,618 deduped) |
 | Ingestion — IA librivoxaudio | ✅ Done | 3,819 records (1,096 deduped) |
-| Ingestion — Jamendo | ✅ Done | 35,025 CC tracks, 47 genre tags (taxonomy-informed re-sweep) |
-| Ingestion — Wikimedia Commons | ✅ Done | 3,559 tracks — 17 genre categories (added soul, r&b), CC audio |
+| Ingestion — Jamendo | ✅ Done | 35,025 CC tracks, 47 genre tags |
+| Ingestion — Wikimedia Commons | ✅ Done | 3,559 tracks — 17 genre categories |
 | Ingestion — Freesound | ✅ Done | 24 genre tags, CDN-hosted HQ MP3 previews |
-| **Total catalog** | **~80,600+ tracks (growing)** | IA: 42,037 — Jamendo: 35,025 — Wikimedia: 3,559 — Freesound: in progress |
+| **Total catalog** | **96,338 tracks (final)** | IA: 42,037 — Jamendo: 35,025 — Wikimedia: 3,559 — Freesound: remainder |
 | Ingestion — ccMixter | ❌ Removed | CORS 403 on content server — unplayable |
-| `content_type` classification | ✅ Done | music / podcast / lecture / audiobook / interview / other |
+| `content_type` classification | ✅ Done | music / podcast / lecture / audiobook / interview |
 | `language` field | ✅ Done | ISO 639-2 stored per record, null = language-agnostic |
-| API — `/tracks/search` | ✅ Live | `q=`, `genre=`, `type=`, `lang=`, `offset=`, `total` |
-| API — `/artists/search` | ✅ Live | `q=` → `{ artist_id, artist_name, track_count }` |
-| API — `/albums/search` | ✅ Live | `artist_id=` (GSI) or `q=` (scan) |
-| API — `/radio` | ✅ Live | `genre=`, `limit=` — random sample, auto-plays in UI |
-| Lambda memory | ✅ 1024MB | All Lambdas, 30s timeout |
-| API — `/stats` | ✅ Live | total_tracks, by_platform, by_type, top_genres — live count |
+| Static JSON export | ✅ Done | `data/genre/` (16 files) + `data/type/` (4 files) + `search-index.json` |
 | Frontend PWA | ✅ Live | `https://shannon-goddard.github.io/music/` |
-| Icons | ✅ Done | Real PNG icons, apple-touch-icon → `logo-180.png` (solid bg) |
-| Service worker | ✅ Live | Cache `v9`, 206 fix, offline pre-cache next 2 tracks |
+| Icons | ✅ Done | Real PNG icons, apple-touch-icon |
+| Service worker | ✅ Live | Cache `v11`, 206 fix, offline pre-cache next 2 tracks |
 | Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
 | Attribution ⓘ sheet | ✅ Live | Bottom sheet on every track row — license, attribution, copy, download |
 | Continue where left off | ✅ Live | 10s position write, resume bar shows track + timestamp, seeks on resume |
 | Offline queue pre-cache | ✅ Live | Next 2 track URLs sent to SW `PRECACHE_AUDIO` on every play |
 | Radio UI | ✅ Live | Radio section on home — tap genre, 50 random tracks auto-play instantly |
-
-**API base URL:** `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1`
 
 ---
 
@@ -47,19 +67,19 @@ This document is the master engineering blueprint for the platform. It reflects 
 
 ```
 [ Data Sources ]
-  Internet Archive (7 collections) ✅  Jamendo ✅  Wikimedia Commons ✅  Freesound ✅  MusicBrainz (enrichment) ������
+  Internet Archive (7 collections) ✅  Jamendo ✅  Wikimedia Commons ✅  Freesound ✅
        │
        ▼
 [ Ingestion & Normalization Layer ]  ← threaded, 10 workers/page, resumable
        │
        ▼
-[ AWS DynamoDB ] ─────────────────────> Meta-Index (CC-licensed, all streamable)
+[ catalog_final.csv ] ────────────> Source of truth (96,338 rows, committed to repo)
        │
        ▼
-[ AWS API Gateway + Lambda ] ─────────> Serverless REST API (lang= filter live)
+[ export_json.py ] ───────────────> data/ JSON chunks (genre + type + search-index)
        │
        ▼
-[ GitHub Pages (Frontend) ] ──────────> PWA / SPA HTML5 Web Player
+[ GitHub Pages (Frontend) ] ──────> PWA / SPA HTML5 Web Player + Fuse.js search
        │
        ├──> Casual Listeners     (radio, queue, Bluetooth, sleep timer)
        ├──> Music Enthusiasts    (tag browse, infinite scroll, library)
@@ -69,7 +89,7 @@ This document is the master engineering blueprint for the platform. It reflects 
 
 ---
 
-## 1. Database Schema (DynamoDB — Flat, Live)
+## 1. Database Schema (DynamoDB — Flat, Reference Only)
 
 ```json
 {
@@ -102,7 +122,7 @@ This document is the master engineering blueprint for the platform. It reflects 
 }
 ```
 
-`language` is ISO 639-2 (`eng`, `fra`, `spa`, etc.) or absent for language-agnostic content (most music). The API `lang=eng` filter matches `language=eng` OR no language field.
+`language` is ISO 639-2 (`eng`, `fra`, `spa`, etc.) or absent for language-agnostic content (most music).
 
 Future fields (not yet populated): `bpm`, `acoustid_fingerprint`, `musicbrainz_artist_id`.
 
@@ -110,7 +130,7 @@ Future fields (not yet populated): `bpm`, `acoustid_fingerprint`, `musicbrainz_a
 
 ---
 
-## 2. DynamoDB GSIs (All 7 Deployed & ACTIVE)
+## 2. DynamoDB GSIs (Reference Only — Table Deleted)
 
 | Index | Hash Key | Range Key | Used By |
 |---|---|---|---|
@@ -155,44 +175,39 @@ Future fields (not yet populated): `bpm`, `acoustid_fingerprint`, `musicbrainz_a
 
 ---
 
-### Phase 4: API Gateway & Lambda ✅ Partially Complete
+### Phase 4: API Gateway & Lambda ✅ Torn Down
 
-#### Live Endpoints
+All endpoints were live and working. Torn down after pivot to static JSON. Schema preserved here for reference.
 
-| Method | Path | Lambda | Status |
-|---|---|---|---|
-| GET | `/tracks/search?q=` | `music-search` | ✅ Live |
-| GET | `/tracks/search?genre=` | `music-search` | ✅ Live |
-| GET | `/tracks/search?type=` | `music-search` | ✅ Live |
-| GET | `/tracks/search?lang=` | `music-search` | ✅ Live — `eng` default, `all` disables filter |
-| GET | `/artists/search?q=` | `music-artists` | ✅ Live |
-| GET | `/albums/search?artist_id=` | `music-albums` | ✅ Live |
-| GET | `/albums/search?q=` | `music-albums` | ✅ Live |
-| GET | `/stats` | `music-stats` | ✅ Live — total, by_platform, by_type, top 20 genres |
-
-#### Pending Endpoints
-
-| Method | Path | Notes |
+| Method | Path | Lambda |
 |---|---|---|
-| GET | `/tracks/{id}` | `music-track` | ✅ Live — single track by `track_id`, includes all MB fields |
-| GET | `/radio?genre=` | `music-radio` | ✅ Live — random sample of 50 active tracks by genre |
+| GET | `/tracks/search?q=` | `music-search` |
+| GET | `/tracks/search?genre=` | `music-search` |
+| GET | `/tracks/search?type=` | `music-search` |
+| GET | `/tracks/search?lang=` | `music-search` |
+| GET | `/artists/search?q=` | `music-artists` |
+| GET | `/albums/search?artist_id=` | `music-albums` |
+| GET | `/albums/search?q=` | `music-albums` |
+| GET | `/stats` | `music-stats` |
+| GET | `/tracks/{id}` | `music-track` |
+| GET | `/radio?genre=` | `music-radio` |
 
 ---
 
 ### Phase 5: PWA & Cross-Device Playback ✅ Complete
 
-- PWA manifest + service worker — cache `v9`, 206 fix, offline pre-cache next 2 tracks
+- PWA manifest + service worker — cache `v11`, 206 fix, offline pre-cache next 2 tracks
 - Real PNG icons — favicon, PWA splash, apple-touch-icon
 - Media Session API — Bluetooth / lock screen / car stereo controls
 - AirPlay — zero-config via `<audio>` element
 
 ---
 
-### Phase 6: Production Hardening ✅ Complete
+### Phase 6: Production Hardening ✅ Complete (Torn Down with Pivot)
 
 - **6.1** CloudWatch alarms — Lambda error rate, 5xx rate
-- **6.2** WAF rate limiting — 1000 req/5min per IP, WebACL `music-api-waf` attached to stage `v1`
-- **6.3** CORS locked to `https://shannon-goddard.github.io` on all 5 Lambdas
+- **6.2** WAF rate limiting — 1000 req/5min per IP, WebACL attached to stage `v1`
+- **6.3** CORS locked to `https://shannon-goddard.github.io` on all Lambdas
 
 ---
 
@@ -206,13 +221,13 @@ Future fields (not yet populated): `bpm`, `acoustid_fingerprint`, `musicbrainz_a
 | Recently played | ✅ Live | `music_recent` localStorage, capped at 20 |
 | My Library (local) | ✅ Live | `music_library` localStorage, heart toggle |
 | Library view | ✅ Live | Play all, empty state |
-| Home view | ✅ Live | Filter chips (type + genre + mood), infinite scroll |
-| Infinite scroll | ✅ Live | `IntersectionObserver` sentinel |
+| Home view | ✅ Live | Filter chips (type + genre + radio), infinite scroll |
+| Infinite scroll | ✅ Live | `IntersectionObserver` sentinel, `Showing X of Y` sticky bar |
 | Keyboard shortcuts | ✅ Live | Space, ←/→, N, P |
 | Media Session API | ✅ Live | Bluetooth / lock screen / car stereo |
 | Language toggle | ✅ Live | EN / All pill in header, persists to localStorage |
-| Cover art fallback | ✅ Live | Deterministic gradient per `album_id` — 12 palette pairs, hash-derived angle, note/eq-bars overlay |
-| Attribution ⓘ button | ✅ Live | Bottom sheet — license URL, attribution text + copy, source link, download if `is_downloadable` |
+| Cover art fallback | ✅ Live | Deterministic gradient per `album_id` |
+| Attribution ⓘ button | ✅ Live | Bottom sheet — license URL, attribution text + copy, source link, download |
 | Download button | ✅ Live | Inside attribution sheet, `stream_url` with `download` attr where `is_downloadable: true` |
 | Continue where left off | ✅ Live | 10s position write, resume bar shows track + timestamp, `playAt()` seeks on resume |
 | Offline queue caching | ✅ Live | Next 2 track URLs pre-fetched via SW `PRECACHE_AUDIO` on every play |
@@ -244,28 +259,29 @@ Future fields (not yet populated): `bpm`, `acoustid_fingerprint`, `musicbrainz_a
 - `_precacheNext()` — posts next 2 queue URLs to SW `PRECACHE_AUDIO` on every play
 
 ### API (`api.js`)
-- `lang` state — `getLang()` / `setLang()`, persists to localStorage, defaults to `'eng'`
-- `_langParam()` appended to all search calls — `&lang=all` when set to all, empty otherwise
-- All search functions: `searchTracks`, `searchByGenre`, `searchByType`, `searchArtists`, `searchAlbums`
+- Fully static — no Lambda calls
+- `getLang()` / `setLang()` — persists to localStorage, defaults to `'eng'`
+- `_langMatch(track)` — client-side language filter applied to all loaded chunks
+- Functions: `searchByGenre`, `searchByType`, `searchTracks` (Fuse.js), `getRadio`, `getStats`
+- Chunk cache (`_cache`) — each JSON file loaded once per session
 
 ### Attribution Sheet (`index.html`)
 - `openInfo(encoded)` / `closeInfo()` — global functions, bottom sheet slides up from any track row
 - Shows: title, artist, license URL (linked), attribution text + copy button, source link, download if `is_downloadable`
-- Track data passed as `encodeURIComponent(JSON.stringify({...}))` on `data-info` attribute
 
 ### Continue Where Left Off (`queue.js` + `player.js`)
 - `savePosition(sec)` stores full track object + position to `music_session` every 10s
 - Resume bar on home shows track title + saved timestamp, calls `playAt()` on click
 
 ### Service Worker (`service-worker.js`)
-- Cache `v9` — shell assets cached on install, includes `utils.js`
+- Cache `v11` — shell assets cached on install
 - 206 Partial Content responses skipped in both `_cacheFirst` and `PRECACHE_AUDIO`
 - `PRECACHE_AUDIO` message handler — pre-fetches next 2 track URLs from player on every play
-- API calls always network-only
+- `data/` JSON chunks served cache-first (static, never changes without a deploy)
 
 ### Views
-- `views/home.js` — filter chips (type + genre + mood), infinite scroll, hearts, now-playing
-- `views/search.js` — infinite scroll, artist→album drill-down, Play all, hearts
+- `views/home.js` — type chips + 16 genre chips + 16 radio chips, infinite scroll, `Showing X of Y` sticky bar
+- `views/search.js` — Fuse.js text search, infinite scroll, artist→album drill-down, Play all
 - `views/library.js` — saved tracks, Play all, heart removes, empty state
 
 ---
@@ -277,22 +293,18 @@ Future fields (not yet populated): `bpm`, `acoustid_fingerprint`, `musicbrainz_a
 | Internet Archive — netlabels | ✅ Done | 4,734 | Modern CC netlabel releases |
 | Internet Archive — 78rpm | ✅ Done | 4,884 | Pre-1930s jazz/blues |
 | Internet Archive — opensource_audio | ✅ Done | 7,497 | 1,739 deduped |
-| Internet Archive — audio_music | ✅ Done | 4,893 | 4,857 deduped — heavy overlap w/ other collections |
-| Internet Archive — georgeblood | ✅ Done | 9,697 | 4 deduped — unique 78rpm/shellac catalog |
+| Internet Archive — audio_music | ✅ Done | 4,893 | 4,857 deduped |
+| Internet Archive — georgeblood | ✅ Done | 9,697 | 4 deduped |
 | Internet Archive — audio_bookspoetry | ✅ Done | 6,144 | 3,618 deduped |
-| Internet Archive — librivoxaudio | ✅ Done | 3,819 | 1,096 deduped, overlaps w/ bookspoetry |
-| Jamendo | ✅ Done | 35,025 | 47 taxonomy-informed tags, full re-sweep, all CC-licensed |
-| Wikimedia Commons | ✅ Done | 3,559 | 17 genre categories (added soul, r&b), CC audio, CORS:*, ogg/mp3/flac |
+| Internet Archive — librivoxaudio | ✅ Done | 3,819 | 1,096 deduped |
+| Jamendo | ✅ Done | 35,025 | 47 taxonomy-informed tags, all CC-licensed |
+| Wikimedia Commons | ✅ Done | 3,559 | 17 genre categories, CC audio |
+| Freesound | ✅ Done | remainder | 24 genre tags, CDN HQ MP3 previews |
 | ccMixter | ❌ Removed | 0 | Content server 403s cross-origin — unplayable |
 | Free Music Archive (FMA) | ❌ Dead end | 0 | API dead, hotlinking prohibited |
-| CCMusic Search | ❌ Dead end | 0 | Not a real API — search UI only, no programmatic access |
-| Openverse | ⏸ Paused | 0 | API confirmed (644k Jamendo + 3.98M Wikimedia) but search endpoint down — revisit |
+| Openverse | ⏸ Paused | 0 | Search endpoint down — revisit if recovered |
 | Starfrosch | ❌ Dead end | 0 | No API, Cloudflare-protected website only |
-| CC Wiki Directory | ❌ Dead end | 0 | Page no longer exists (wgArticleId: 0) |
-| Spotube | ❌ Not applicable | 0 | YouTube client — ToS prohibits use, no CC licensing |
-| MusicFree | ❌ Not applicable | 0 | Plugin-based player wrapping copyrighted Chinese streaming services |
-| Pixabay | ❌ No audio API | 0 | Images/video API only — music section not in API |
-| Freesound | ✅ Done | growing | 24 genre tags, CDN HQ MP3 previews, duration native, CC-licensed |
+| Pixabay | ❌ No audio API | 0 | Images/video API only |
 | MusicBrainz | 🔜 Planned | — | Metadata enrichment only, not a track source |
 
 ### Source Vetting Criteria
@@ -301,7 +313,7 @@ A source is only ingested if:
 2. CC license or public domain confirmed per-track
 3. No hotlinking or scraping prohibition
 
-### Ingest Commands (per collection, run in separate terminals)
+### Ingest Commands
 ```
 python -u tests\test_ingest_ia.py netlabels
 python -u tests\test_ingest_ia.py 78rpm
@@ -334,11 +346,11 @@ python -u tests\backfill_duration.py --workers 3
 
 | Issue | Status | Notes |
 |---|---|---|
-| Service worker 206 error | ✅ Fixed | Cache `v9` skips 206 responses |
-| ccMixter CORS 403 | ✅ Resolved | All records wiped from DB |
-| Lambda total count cache | ⚠️ Known | `total` caches ~5min after large DB changes |
-| Scroll broken (overflow-x:hidden) | ✅ Fixed | `overflow-x:clip` on body — `hidden` creates scroll container collapsing body height |
-| Non-English content in results | ✅ Mitigated | `lang=eng` default filters to English + language-agnostic; EN/All toggle in header |
+| Service worker 206 error | ✅ Fixed | Cache `v11` skips 206 responses |
+| ccMixter CORS 403 | ✅ Resolved | All records wiped |
+| Scroll broken (overflow-x:hidden) | ✅ Fixed | `overflow-x:clip` on body |
+| Non-English content in results | ✅ Mitigated | `lang=eng` default, EN/All toggle in header |
+| AbortError on rapid track change | ✅ Fixed | Suppressed in `player.js` — benign race condition |
 
 ---
 
@@ -347,88 +359,64 @@ python -u tests\backfill_duration.py --workers 3
 ```
 music/
 ├── backend/
-│   ├── api/
-│   │   ├── search.py               # Lambda: GET /tracks/search (q, genre, type, lang, offset)
-│   │   ├── artists.py              # Lambda: GET /artists/search?q=
-│   │   ├── albums.py               # Lambda: GET /albums/search
-│   │   └── stats.py                # Lambda: GET /stats — total, by_platform, by_type, top_genres
+│   ├── api/                        # Lambda handlers — reference only, torn down
 │   ├── db/
 │   │   └── dynamo_client.py
 │   ├── health/
 │   │   └── link_checker.py
 │   ├── ingestion/
-│   │   ├── base_adapter.py
-│   │   ├── ia_adapter.py           # IA — 7 collections, threaded, language normalization
-│   │   ├── jamendo_adapter.py      # Jamendo — 47 taxonomy-informed tags, 35,025 tracks
-│   │   ├── wikimedia_adapter.py    # Wikimedia Commons — 17 genre categories, 3,559 tracks
-│   │   ├── freesound_adapter.py    # Freesound — 24 genre tags, CDN HQ MP3 previews
-│   │   ├── ccmixter_adapter.py     # ccMixter — CORS 403, kept for reference only
-│   │   ├── normalizer.py           # ALLOWED_PLATFORMS gating (ia, jamendo, wikimedia, freesound)
+│   │   ├── ia_adapter.py
+│   │   ├── jamendo_adapter.py
+│   │   ├── wikimedia_adapter.py
+│   │   ├── freesound_adapter.py
+│   │   ├── normalizer.py
 │   │   └── deduplicator.py
 │   └── requirements.txt
 │
-├── frontend/                       # Deployed to gh-pages branch
-│   ├── index.html                  # EN/All language toggle in header
-│   ├── manifest.json               # PWA: 3 icon sizes
-│   ├── service-worker.js           # Cache v9, 206 fix, PRECACHE_AUDIO handler
-│   ├── about.html
-│   ├── privacy.html
-│   ├── terms.html
-│   ├── licenses.html
-│   ├── css/
-│   │   └── app.css
-│   ├── js/
-│   │   ├── app.js                  # Router, lang toggle, back-to-top, keyboard shortcuts
-│   │   ├── player.js               # play(), playAt(), sleep timer, shuffle, repeat, precache
-│   │   ├── queue.js                # setQueue, savePosition (stores full track + sec)
-│   │   ├── api.js                  # getLang/setLang, lang= param on all search calls
-│   │   ├── utils.js                # coverGradient(id), artThumb(track) — shared across views
-│   │   ├── scroll.js
-│   │   ├── library.js
-│   │   ├── i18n/
-│   │   │   └── en.js
-│   │   └── views/
-│   │       ├── home.js
-│   │       ├── search.js
-│   │       └── library.js
-│   └── icons/
-│       ├── icon.png                # Source (221×221)
-│       ├── icon-192.png            # PWA + favicon
-│       ├── icon-512.png            # PWA splash
-│       ├── logo.png                # Source (224×224)
-│       └── logo-180.png            # apple-touch-icon
+├── cleaning/
+│   ├── catalog_final.csv           # Source of truth — 96,338 rows, all 4 passes complete
+│   ├── export_json.py              # Exports catalog_final.csv → data/ JSON chunks
+│   └── CLEANING.md                 # Full documentation of all 4 cleaning passes
 │
-├── infra/
-│   ├── dynamo_schema.json
-│   ├── aws-resources.md
-│   ├── lambda-policy.json
-│   └── lambda-trust-policy.json
+├── data/                           # Static JSON served from GitHub Pages
+│   ├── index.json                  # Manifest — total counts, genre/type inventory
+│   ├── genre/                      # 16 files — one per canonical genre
+│   └── type/                       # 4 files — audiobook, podcast, lecture, interview
 │
-├── scripts/
-│   ├── backfill_content_type.py
-│   ├── probe_jamendo_taxonomy.py   # Dumps all genre/vartag/instrument labels + counts
-│   ├── probe_ia_taxonomy.py        # Dumps all subject tags across IA collections
-│   ├── jamendo_taxonomy.json       # Output — 64 genres, 140 vartags, 30 instruments
-│   ├── ia_taxonomy.json            # Output — full subject tag frequency map
-│   ├── probe_jamendo_cc_total.py
-│   ├── probe_ia_collections.py     # Item counts across all IA collections
-│   ├── probe_ia_new_collections.py # Sanity check one page per collection
-│   └── preview_collections.py
+├── css/
+│   └── app.css
 │
-├── tests/
-│   ├── test_ingest.py              # Legacy: IA netlabels + 78rpm
-│   ├── test_ingest_ia.py           # Current: all IA collections, threaded, resumable
-│   ├── test_ingest_jamendo.py      # Jamendo 47-tag sweep, unlimited pages
-│   ├── test_ingest_wikimedia.py    # Wikimedia 17-genre sweep
-│   ├── test_ingest_freesound.py    # Freesound 24-tag sweep
-│   ├── backfill_content_type.py    # Scan + update content_type by ia_collection rule
-│   ├── backfill_duration.py        # IA tracks missing duration_sec — hits archive.org/metadata
-│   ├── test_ingest_ccmixter.py     # ccMixter — kept for reference, not run
-│   └── wipe_ccmixter.py            # Utility: wipe ccmixter records from DB
+├── js/
+│   ├── app.js                      # Router, lang toggle, back-to-top, keyboard shortcuts
+│   ├── player.js                   # play(), playAt(), sleep timer, shuffle, repeat, precache
+│   ├── queue.js                    # setQueue, savePosition
+│   ├── api.js                      # Static JSON loader, Fuse.js search, lang filter
+│   ├── utils.js                    # coverGradient(id), artThumb(track)
+│   ├── scroll.js                   # InfiniteScroll — IntersectionObserver sentinel
+│   ├── library.js
+│   ├── i18n/
+│   │   └── en.js
+│   └── views/
+│       ├── home.js                 # Type + genre + radio chips, infinite scroll
+│       ├── search.js               # Fuse.js search, artist→album drill-down
+│       └── library.js
 │
-├── .gitignore
-├── project_architecture_technical_roadmap.md
-└── serve.py
+├── icons/
+├── infra/                          # AWS reference docs — dynamo schema, IAM policies
+├── scripts/                        # Probe + taxonomy scripts
+├── tests/                          # Ingest + backfill scripts
+│
+├── index.html
+├── about.html
+├── privacy.html
+├── terms.html
+├── licenses.html
+├── manifest.json
+├── service-worker.js
+├── serve.py                        # Local dev server — strips /music prefix
+├── robots.txt
+├── sitemap.xml
+└── project_architecture_technical_roadmap.md
 ```
 
 ---
@@ -436,73 +424,31 @@ music/
 ## 8. Pending Items (Prioritized)
 
 ### 1. content_type backfill ✅ Done
-- `georgeblood` → `music`, `librivoxaudio` → `audiobook`, `audio_bookspoetry` → `audiobook`
-- Script: `tests/backfill_content_type.py`
-
-
 ### 2. duration_sec backfill ✅ Done
-- IA tracks missing `duration_sec` backfilled via `archive.org/metadata/{id}`
-- Script: `tests/backfill_duration.py`
-
-
 ### 3. Freesound full ingest ✅ Done
-- 24 genre tags, CDN-hosted HQ MP3 previews, duration native, all CC-licensed
-- API key in Secrets Manager: `freesound-api`
-
-
-### 4. Genre normalization ✅ Fixed at ingest
-- `_resolve_genre(subjects)` added to `ia_adapter.py` — maps IA subject tags to canonical genre keys at ingest time
-- `_GENRE_MAP` (15 genres, ordered by specificity) + `_TAG_TO_GENRE` reverse lookup built from `ia_taxonomy.json`
-- All new IA records get a clean genre key — no backfill needed for new ingest
-- Pre-fix IA records with raw subject tags remain as-is; low priority since Radio works on clean records
-
-
-### 5. IA ingest — page cap removed ✅
-- Fixed `PAGES` dict (100–2000 per collection) replaced with `999_999` sentinel
-- Stop condition is now 3 consecutive empty pages — same behavior as Jamendo
-- `--start-page N` resume flag available on all collections
-
+### 4. Genre normalization ✅ Done — 4 cleaning passes complete
+### 5. Static JSON export ✅ Done — `cleaning/export_json.py`
 
 ### 6. Openverse ⏸ Paused (when API recovers)
-- Search endpoint currently timing out — stats endpoint confirmed working
+- Search endpoint currently timing out
 - 644k Jamendo + 3.98M Wikimedia tracks not yet touched via their API
 - Would 10x+ the catalog — highest volume multiplier available
+- If catalog reaches 500k+, revert to the serverless architecture above
 
-### 7. Health checker scheduling
-- `link_checker.py` exists and works — runs manually only
-- Add EventBridge cron rule → Lambda trigger, weekly run
+### 7. README
+- Write user-facing README for the GitHub repo
 
-### 8. Monthly ingest cron
-- GitHub Actions workflow to re-run adapters and pick up new uploads
-- Jamendo and Freesound both add content continuously
+---
 
-### 9. MusicBrainz metadata enrichment
-- Backfill script exists (`scripts/backfill_musicbrainz.py`)
-- Hit rate ~3–4% on georgeblood/78rpm due to messy metadata
-- Lower priority until catalog stabilizes after IA re-ingest
-
-## 9. Key AWS Resources
+## 9. Key Resources
 
 | Resource | Value |
 |---|---|
-| Region | `us-east-1` |
-| Account | `170377509849` |
-| DynamoDB table | `music-tracks` |
-| Lambda — search | `music-search` (1024MB, 30s) |
-| Lambda — artists | `music-artists` (1024MB, 30s) |
-| Lambda — albums | `music-albums` (1024MB, 30s) |
-| Lambda — stats | `music-stats` (1024MB, 30s) |
-| Lambda — track | `music-track` (512MB, 10s) |
-| Lambda — radio | `music-radio` (256MB, 30s) |
-| Lambda role | `arn:aws:iam::170377509849:role/music-lambda-role` |
-| WAF WebACL | `music-api-waf` — 100 req/5min per IP, attached to stage `v1` |
-| CORS origin | `https://shannon-goddard.github.io` (all 5 Lambdas) |
-| API Gateway ID | `9jxmxtjybb` |
-| API base URL | `https://9jxmxtjybb.execute-api.us-east-1.amazonaws.com/v1` |
-| Jamendo credentials | Secrets Manager `music/jamendo` |
-| Freesound credentials | Secrets Manager `freesound-api` |
 | Frontend (live) | `https://shannon-goddard.github.io/music/` |
 | GitHub repo | `https://github.com/Shannon-Goddard/music` |
+| Source of truth | `cleaning/catalog_final.csv` — 96,338 rows |
+| Static data | `data/` — 16 genre chunks + 4 type chunks + search-index |
+| Dev server | `python serve.py` → `http://localhost:8000/` |
 
 ---
 
@@ -512,6 +458,77 @@ music/
 - **Source quality gating** — CORS vetting + license check before any source is ingested
 - **Language-aware catalog** — ISO 639-2 per record, EN default filter, user-toggleable
 - **Content-type diversity** — music, audiobooks, lectures, podcasts all classified and filterable
-- **Unified cross-platform catalog** — single flat schema across Internet Archive + Jamendo
-- **Decoupled serverless stack** — GitHub Pages + Lambda + DynamoDB, free-tier friendly
+- **Unified cross-platform catalog** — single flat schema across Internet Archive + Jamendo + Wikimedia + Freesound
 - **Preservation monitoring** — dead link health system tracks open archive integrity over time
+
+---
+
+## 11. Detour — Static JSON Architecture
+
+### Why
+After completing all 4 cleaning passes, the final catalog landed at **96,338 tracks**. The serverless stack was designed for 500k+. At this scale:
+
+- API Gateway + Lambda costs money at real traffic — a static catalog doesn't need server-side compute
+- Cold starts add latency that a pre-built client-side index eliminates
+- Openverse (the primary 10x growth path) has an indefinitely broken search endpoint
+- All other viable CC-licensed, CORS-clean sources with real APIs are exhausted
+
+The infrastructure works. The scale didn't materialize. A detour is the smarter road.
+
+### What changed
+- DynamoDB table deleted — `cleaning/catalog_final.csv` (96,338 rows) is the source of truth
+- API Gateway + all 6 Lambdas torn down
+- WAF WebACL detached and deleted
+- Frontend rewired to static JSON served from GitHub Pages
+- Client-side search (Fuse.js) replaces all Lambda query patterns
+
+### Static data architecture
+
+```
+data/
+├── index.json              # Manifest — total counts, genre/type inventory
+├── genre/
+│   ├── electronic.json     # 12,981 tracks
+│   ├── ambient.json        # 6,851 tracks
+│   ├── classical.json      # 5,580 tracks
+│   ├── hip-hop.json        # 4,702 tracks
+│   ├── rock.json           # 4,665 tracks
+│   ├── pop.json            # 4,438 tracks
+│   ├── jazz.json           # 4,275 tracks
+│   ├── experimental.json   # 3,276 tracks
+│   ├── reggae.json         # 2,894 tracks
+│   ├── blues.json          # 2,074 tracks
+│   ├── folk.json           # 1,770 tracks
+│   ├── soul.json           # 1,553 tracks
+│   ├── country.json        # 832 tracks
+│   ├── metal.json          # 453 tracks
+│   ├── punk.json           # 293 tracks
+│   └── industrial.json     # 196 tracks
+└── type/
+    ├── audiobook.json      # 10,867 tracks
+    ├── podcast.json        # 880 tracks
+    ├── lecture.json        # 535 tracks
+    └── interview.json      # 361 tracks
+```
+
+Note: `type/music.json` was not generated — at 64MB it is too large for GitHub Pages. Music is browsed by genre only.
+
+### Query pattern mapping
+
+| Old Lambda pattern | New static pattern |
+|---|---|
+| `GET /tracks/search?genre=jazz` | Load `data/genre/jazz.json`, paginate client-side |
+| `GET /tracks/search?type=audiobook` | Load `data/type/audiobook.json`, paginate client-side |
+| `GET /tracks/search?q=coltrane` | Fuse.js search against `data/search-index.json` |
+| `GET /radio?genre=jazz&limit=50` | Load `data/genre/jazz.json`, shuffle, slice 50 |
+| `lang=eng` filter | Client-side filter on `language` field |
+
+### Scripts
+- `cleaning/export_json.py` — exports `catalog_final.csv` → `data/` JSON chunks
+- Run once after any catalog update; commit `data/` to repo
+
+### Trade-offs accepted
+- Text search quality: Fuse.js fuzzy search vs DynamoDB full-scan — acceptable at 96k tracks
+- No server-side artist/album search endpoints — client-side filtering on loaded chunks
+- `data/` folder is ~15-20MB in the repo — acceptable for GitHub Pages
+- If catalog ever reaches 500k+, revert to the serverless architecture above

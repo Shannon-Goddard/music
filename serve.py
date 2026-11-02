@@ -1,5 +1,6 @@
 """
 Dev server — serves repo root at http://localhost:8000/
+Strips /music prefix so paths match GitHub Pages layout.
 Run: python serve.py
 """
 
@@ -8,11 +9,14 @@ import socketserver
 import os
 
 PORT = 8000
-ROOT = os.path.dirname(__file__)
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
+        path = path.split("?")[0].split("#")[0]
+        if path.startswith("/music"):
+            path = path[len("/music"):]
         if not path or path == "/":
             path = "/index.html"
         return os.path.join(ROOT, path.lstrip("/"))

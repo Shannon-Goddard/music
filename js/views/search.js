@@ -1,4 +1,4 @@
-import { searchTracks } from '../api.js';
+import { searchTracks, getLang } from '../api.js';
 import { InfiniteScroll } from '../scroll.js';
 import { playQueue } from '../player.js';
 import { isSaved, toggleSaved } from '../library.js';
@@ -39,11 +39,11 @@ export async function render(app, query) {
   let artistMap    = {};
 
   const listEl   = document.getElementById('results');
-  const statusEl = document.getElementById('results-status');
+  const countEl  = document.getElementById('results-count');
 
   const scroller = new InfiniteScroll({
     listEl,
-    statusEl,
+    statusEl: countEl,
     fetchFn: (offset) => searchTracks(query, 20, offset),
     renderFn: (tracks, offset) => {
       allTracks = allTracks.slice(0, offset).concat(tracks);
@@ -62,7 +62,6 @@ export async function render(app, query) {
         document.getElementById('search-filters').classList.remove('hidden');
         _renderArtistChips(artists, activeArtist);
       }
-      _updateCount(allTracks.length, activeArtist, activeAlbum, artistMap);
     },
   });
 
@@ -91,7 +90,6 @@ export async function render(app, query) {
       }
       _renderFilteredTracks(_tracksForArtist(artistMap, artist));
     }
-    _updateCount(allTracks.length, activeArtist, activeAlbum, artistMap);
   });
 
   // ── Album chip clicks ───────────────────────────────────
@@ -109,7 +107,6 @@ export async function render(app, query) {
       _setActiveChip(chip, '#album-chips');
       _renderFilteredTracks(artistMap[activeArtist][album]);
     }
-    _updateCount(allTracks.length, activeArtist, activeAlbum, artistMap);
   });
 
   // ── Play all ────────────────────────────────────────────
@@ -153,17 +150,6 @@ function _renderAlbumChips(albums, active) {
 
 function _renderFilteredTracks(tracks) {
   document.getElementById('results').innerHTML = tracks.map((t, i) => _trackRow(t, i)).join('');
-}
-
-function _updateCount(total, activeArtist, activeAlbum, artistMap) {
-  const filtered = _currentTracks(artistMap, activeArtist, activeAlbum, []).length;
-  const el = document.getElementById('results-count');
-  if (!el) return;
-  if (activeArtist || activeAlbum) {
-    el.textContent = `${filtered} of ${total.toLocaleString()} loaded`;
-  } else {
-    el.textContent = `${total.toLocaleString()} loaded`;
-  }
 }
 
 function _setActiveChip(activeEl, containerSelector) {

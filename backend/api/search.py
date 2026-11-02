@@ -62,32 +62,43 @@ def _get_total_active() -> int:
 
 def _paginate_scan(filter_expr, offset: int, limit: int) -> tuple[list, int]:
     """
-    Scan with filter, skip `offset` matching items, return `limit` items
-    and the total matching count. Uses track_id for stable ordering.
+    Scan with filter using native DynamoDB pagination.
+    Skips `offset` matching items by tracking a cursor, returns `limit` items.
+    Total is estimated from scanned count — exact count avoided to prevent full-table reads.
     """
-    all_items = []
+    collected = []
+    skipped   = 0
+    total_est = 0
     scan_kwargs = {"FilterExpression": filter_expr}
 
     while True:
-        resp = _get_table().scan(**scan_kwargs)
-        all_items.extend(resp.get("Items", []))
+        resp  = _get_table().scan(**scan_kwargs)
+        items = resp.get("Items", [])
+        total_est += len(items)
+
+        for item in items:
+            if skipped < offset:
+                skipped += 1
+                continue
+            if len(collected) < limit:
+                collected.append(item)
+
         last = resp.get("LastEvaluatedKey")
-        if not last:
+        if not last or len(collected) >= limit:
             break
         scan_kwargs["ExclusiveStartKey"] = last
 
-    # Stable sort by track_id so pages never overlap or skip
-    all_items.sort(key=lambda x: x.get("track_id", ""))
-    total = len(all_items)
-    page  = all_items[offset: offset + limit]
-    return page, total
+    return collected, total_est
 
 
 def _paginate_query(index: str, key_expr, filter_expr, offset: int, limit: int) -> tuple[list, int]:
     """
-    Query a GSI, collect all matching items, sort by track_id, return page + total.
+    Query a GSI using native DynamoDB pagination.
+    Skips `offset` matching items, returns `limit` items.
     """
-    all_items = []
+    collected = []
+    skipped   = 0
+    total_est = 0
     query_kwargs = {
         "IndexName": index,
         "KeyConditionExpression": key_expr,
@@ -96,17 +107,23 @@ def _paginate_query(index: str, key_expr, filter_expr, offset: int, limit: int) 
     }
 
     while True:
-        resp = _get_table().query(**query_kwargs)
-        all_items.extend(resp.get("Items", []))
+        resp  = _get_table().query(**query_kwargs)
+        items = resp.get("Items", [])
+        total_est += len(items)
+
+        for item in items:
+            if skipped < offset:
+                skipped += 1
+                continue
+            if len(collected) < limit:
+                collected.append(item)
+
         last = resp.get("LastEvaluatedKey")
-        if not last:
+        if not last or len(collected) >= limit:
             break
         query_kwargs["ExclusiveStartKey"] = last
 
-    all_items.sort(key=lambda x: x.get("track_id", ""))
-    total = len(all_items)
-    page  = all_items[offset: offset + limit]
-    return page, total
+    return collected, total_est
 
 
 def _lang_filter(lang: str):
@@ -183,7 +200,15 @@ def _search_by_text(query: str, lang: str, offset: int, limit: int) -> tuple[lis
         return [], 0
 
 
+def _ia_cors_url(url: str) -> str:
+    """Rewrite archive.org/download/ to archive.org/cors/ for CORS-safe streaming."""
+    if url and "archive.org/download/" in url:
+        return url.replace("archive.org/download/", "archive.org/cors/", 1)
+    return url
+
+
 def _format_track(item: dict) -> dict:
+    stream_url = _ia_cors_url(item.get("stream_url", ""))
     return {
         "content_type":    item.get("content_type", "other"),
         "track_id":        item.get("track_id"),
@@ -196,7 +221,7 @@ def _format_track(item: dict) -> dict:
         "tags":            item.get("tags", []),
         "duration_sec":    item.get("duration_sec"),
         "cover_art_url":   item.get("cover_art_url"),
-        "stream_url":      item.get("stream_url"),
+        "stream_url":      stream_url,
         "source_url":      item.get("source_url"),
         "license_type":    item.get("license_type"),
         "is_downloadable": item.get("is_downloadable", False),

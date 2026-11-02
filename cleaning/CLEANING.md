@@ -128,14 +128,102 @@ Logic per row:
 - `genre_resolved` blank → `REMOVE genre` (null)
 - Dry-run by default, `--live` flag to apply
 
-**Status:** Ready to run.
+**Result:** ✅ Done — 56,848 SET, 39,585 REMOVE, 0 errors.
+
+**Post-backfill issue:** `delete_rows.py` removed 785 junk rows from the CSV but those records already existed in DynamoDB and were never touched by the backfill. Verify scan (`verify_genres.py`) revealed 2,455 non-canonical genre values still live in the table.
+
+#### Step 5 — DynamoDB non-canonical cleanup
+**Script:** `cleaning/clean_noncanonical_genres.py`
+
+Scans the live table, REMOVEs `genre` on any row whose value is not in the 15 canonical set. Catches both the 785 deleted-CSV rows and any stragglers that slipped through the tag fallback.
+
+- Dry-run confirmed: 2,455 rows
+- Dry-run by default, `--live` flag to apply
+
+**Result:** ✅ Done — 2,455 removed, 0 errors.
 
 ---
 
-## Pending Passes
+## Pass 2 — Final Verified State (live DynamoDB)
 
-- [ ] **Pass 3** — Duplicate titles within same platform — spot check
-- [ ] **Pass 4** — Missing `duration_sec` (22,044) — decide: backfill or acceptable gap
+| | Count | % |
+|---|---|---|
+| Total rows | 99,220 | |
+| With canonical genre | 57,180 | 57.6% |
+| Without genre (null) | 42,040 | 42.4% |
+
+### Genre distribution
+| Genre | Tracks |
+|---|---|
+| electronic | 13,079 |
+| ambient | 6,908 |
+| classical | 5,596 |
+| hip-hop | 4,707 |
+| rock | 4,674 |
+| pop | 4,441 |
+| jazz | 4,284 |
+| experimental | 3,397 |
+| reggae | 2,894 |
+| blues | 2,074 |
+| folk | 1,783 |
+| soul | 1,553 |
+| country | 833 |
+| metal | 457 |
+| punk | 297 |
+| industrial | 203 |
+
+**Status:** Running live.
+
+---
+
+## Pass 4 — duration_sec ✅ Done
+
+**Script:** `cleaning/clean_duration.py`
+**Input:** `cleaning/catalog_clean_unknown.csv`
+**Output:** `cleaning/catalog_final.csv`
+
+Decision: null out zeros, accept the missing gap. Duration is display-only — a missing value shows blank in the UI, the track still plays.
+
+| | Count |
+|---|---|
+| Has duration_sec | 75,434 |
+| Missing (accepted gap) | 20,904 — 99.9% IA |
+| Zero → nulled | 265 |
+| Over 1hr (valid) | 1,400 — radio recordings, experimental long-form |
+
+**Final catalog:** `catalog_final.csv` — 96,338 rows, all passes complete.
+
+---
+
+## Pass 3 — Duplicates & Unidentifiable Tracks ✅ Done
+
+#### Step 1 — True duplicate check (stream_url)
+**Script:** `cleaning/probe_true_dupes.py`
+
+Checked for duplicate `stream_url` values — the only reliable signal of a true duplicate (same file ingested from multiple IA collections).
+
+| | Count |
+|---|---|
+| Duplicate stream_url groups | 0 |
+| Extra rows to delete | 0 |
+
+Title overlaps (e.g. 71x "None Legible", 7x "The Lost Chord") are all legitimate — different recordings of the same public domain songs across different IA collections. Not duplicates.
+
+#### Step 2 — Unidentifiable tracks
+**Script:** `cleaning/delete_unknown.py`
+**Input:** `cleaning/catalog_genre_applied.csv`
+**Output:** `cleaning/catalog_clean_unknown.csv`
+
+Deleted rows where both `title` AND `artist_name` were unknown/blank — no way to display these in the UI.
+
+Unknown values matched: `unknown artist`, `unknown`, `""`, `-`, `none legible`, `none listed`
+
+| | Count |
+|---|---|
+| Deleted | 95 |
+| Kept | 96,338 |
+
+All 95 were `internet_archive`, 80 had no genre either. Not worth adding an `other` content type chip to the UI for 95 unidentifiable tracks.
 
 ---
 
@@ -172,7 +260,19 @@ Logic per row:
 | `apply_genres.py` | Applies genre map + tags fallback, produces `catalog_genre_applied.csv` |
 | `delete_rows.py` | Pass 2 step 1 — deletes junk genre rows |
 | `backfill_genres.py` | Pass 2 step 4 — writes resolved genres to DynamoDB |
+| `clean_noncanonical_genres.py` | Pass 2 step 5 — REMOVEs any non-canonical genre still in DynamoDB |
+| `verify_genres.py` | Verification script — scans live table, reports genre distribution |
 | `probe_tags.py` | Audit script — tags field coverage and top token vocabulary |
+| `probe_dupes.py` | Pass 3 — duplicate probe by title+artist+platform |
+| `report_dupes.py` | Pass 3 — dupe group detail report with stream_urls |
+| `probe_true_dupes.py` | Pass 3 — true duplicate check by stream_url |
+| `probe_unknown.py` | Pass 3 — unidentifiable track probe (unknown title+artist) |
+| `delete_unknown.py` | Pass 3 — deletes unidentifiable tracks from DynamoDB + writes cleaned CSV |
+| `catalog_clean_unknown.csv` | After Pass 3 — unidentifiable rows deleted (96,338) |
+| `probe_duration.py` | Pass 4 — missing duration_sec probe by platform and content_type |
+| `probe_duration_outliers.py` | Pass 4 — zero and outlier duration probe |
+| `clean_duration.py` | Pass 4 — nulls zero duration_sec in DynamoDB + writes final CSV |
+| `catalog_final.csv` | 🏁 Final clean catalog — 96,338 rows, all passes complete |
 | `tags_audit.txt` | Output of probe_tags.py |
 | `genre_audit.txt` | All 3,616 distinct genre values with counts and platform breakdown |
 | `genre_mapping.txt` | Full mapping table — every raw value → canonical or unresolved |

@@ -1,0 +1,27 @@
+{
+  "total_tracks": 96338,
+  "genres": {
+    "ambient": 6851,
+    "blues": 2074,
+    "classical": 5580,
+    "country": 832,
+    "electronic": 12981,
+    "experimental": 3276,
+    "folk": 1770,
+    "hip-hop": 4702,
+    "industrial": 196,
+    "jazz": 4275,
+    "metal": 453,
+    "pop": 4438,
+    "punk": 293,
+    "reggae": 2894,
+    "rock": 4665,
+    "soul": 1553
+  },
+  "types": {
+    "audiobook": 10867,
+    "interview": 361,
+    "lecture": 535,
+    "podcast": 880
+  }
+}

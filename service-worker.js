@@ -1,4 +1,4 @@
-const CACHE_NAME = 'music-shell-v9';
+const CACHE_NAME = 'music-shell-v11';
 const AUDIO_CACHE = 'music-audio-v1';
 const BASE = '/music';
 
@@ -55,9 +55,9 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // API calls — always network, no cache
-  if (url.hostname.includes('execute-api.amazonaws.com')) {
-    event.respondWith(fetch(request));
+  // data/ JSON chunks — cache first (static, never changes without a deploy)
+  if (url.pathname.startsWith(`${BASE}/data/`)) {
+    event.respondWith(_cacheFirst(request, CACHE_NAME));
     return;
   }
 

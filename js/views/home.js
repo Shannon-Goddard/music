@@ -1,4 +1,4 @@
-import { searchByGenre, searchByType, getRadio } from '../api.js';
+import { searchByGenre, searchByType, getRadio, getLang } from '../api.js';
 import { InfiniteScroll } from '../scroll.js';
 import { playQueue } from '../player.js';
 import { playAt } from '../player.js';
@@ -7,14 +7,13 @@ import { isSaved, toggleSaved } from '../library.js';
 import { artThumb, coverGradient } from '../utils.js';
 import en from '../i18n/en.js';
 
-const GENRES = ['Electronic', 'Rock', 'Ambient', 'Experimental', 'Blues', 'Jazz', 'Industrial', 'Classical', 'Hip-Hop', 'Folk', 'Country'];
+const GENRES = ['Electronic', 'Rock', 'Ambient', 'Experimental', 'Blues', 'Jazz', 'Industrial', 'Classical', 'Hip-Hop', 'Folk', 'Country', 'Pop', 'Reggae', 'Soul', 'Metal', 'Punk'];
 
 const CONTENT_TYPES = [
-  { label: 'Music',      value: 'music',      icon: _svgMusic() },
-  { label: 'Podcasts',   value: 'podcast',    icon: _svgMic() },
-  { label: 'Interviews', value: 'interview',  icon: _svgMic() },
-  { label: 'Lectures',   value: 'lecture',    icon: _svgBook() },
-  { label: 'Audiobooks', value: 'audiobook',  icon: _svgBook() },
+  { label: 'Podcasts',   value: 'podcast',   icon: _svgMic() },
+  { label: 'Interviews', value: 'interview', icon: _svgMic() },
+  { label: 'Lectures',   value: 'lecture',   icon: _svgBook() },
+  { label: 'Audiobooks', value: 'audiobook', icon: _svgBook() },
 ];
 
 export async function render(app) {
@@ -40,7 +39,7 @@ export async function render(app) {
     </section>
 
     <section class="mb-8">
-      <h2 class="section-label">${en.home_genre}</h2>
+      <h2 class="section-label">Music</h2>
       <div class="scroll-row">
         ${GENRES.map(g => _chip({ label: g, attr: 'data-genre', value: g.toLowerCase() })).join('')}
       </div>
@@ -227,21 +226,17 @@ function _loadPaged(fetchFn, label) {
     if (allLoaded.length) playQueue(allLoaded, 0);
   });
 
+  const countEl = document.getElementById('results-count');
   const scroller = new InfiniteScroll({
     listEl:   list,
-    statusEl: status,
+    statusEl: countEl,
     fetchFn,
     renderFn: (tracks, offset) => {
       if (offset === 0) list.innerHTML = '';
       allLoaded = allLoaded.slice(0, offset).concat(tracks);
       list.insertAdjacentHTML('beforeend', tracks.map((t, i) => _trackRow(t, offset + i)).join(''));
-      // Update sticky count
       const bar = document.getElementById('sticky-count-bar');
-      if (bar) {
-        bar.style.display = 'flex';
-        const countEl = document.getElementById('results-count');
-        if (countEl) countEl.textContent = `${allLoaded.length.toLocaleString()} loaded`;
-      }
+      if (bar) bar.style.display = 'flex';
     },
   });
 
