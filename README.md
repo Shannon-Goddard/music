@@ -1,11 +1,11 @@
 ![name-logo](icons/header.png)
 
-[![Live Demo](https://img.shields.io/badge/live_demo-04aa6d?logo=github)](https://shannon-goddard.github.io/music/)
-[![Tracks](https://img.shields.io/badge/96%2C338_tracks-04aa6d)](data/index.json)
-[![License](https://img.shields.io/badge/license-MIT-04aa6d)](LICENSE)
-[![PWA](https://img.shields.io/badge/PWA-ready-04aa6d?logo=pwa)](https://shannon-goddard.github.io/music/)
+[![Live Demo](https://img.shields.io/badge/live_demo-000000?logo=github)](https://shannon-goddard.github.io/music/)
+[![Tracks](https://img.shields.io/badge/96%2C338_tracks-FFFFE0)](data/index.json)
+[![License](https://img.shields.io/badge/license-MIT-5B7C99)](LICENSE)
+[![PWA](https://img.shields.io/badge/PWA-ready-b1430c?logo=pwa)](https://shannon-goddard.github.io/music/)
 [![Built with Amazon Q](https://img.shields.io/badge/built_with-Amazon_Q-FF9900?logo=amazonaws)](https://aws.amazon.com/q/)
-[![Loyal9 LLC](https://img.shields.io/badge/Loyal9_LLC-242428)](https://shannon-goddard.loyal9.app/)
+[![Loyal9 LLC](https://img.shields.io/badge/dev-Loyal9_LLC-04aa6d)](https://shannon-goddard.loyal9.app/)
 
 ---
 
