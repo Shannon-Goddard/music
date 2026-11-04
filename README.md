@@ -1,7 +1,7 @@
 ![name-logo](icons/header.png)
 
 [![Live Demo](https://img.shields.io/badge/live_demo-000000?logo=github)](https://shannon-goddard.github.io/music/)
-[![Tracks](https://img.shields.io/badge/96%2C338_tracks-FFFFE0)](data/index.json)
+[![Tracks](https://img.shields.io/badge/106%2C121_tracks-FFFFE0)](data/index.json)
 [![License](https://img.shields.io/badge/license-MIT-5B7C99)](LICENSE)
 [![PWA](https://img.shields.io/badge/PWA-ready-b1430c?logo=pwa)](https://shannon-goddard.github.io/music/)
 [![Built with Amazon Q](https://img.shields.io/badge/built_with-Amazon_Q-FF9900?logo=amazonaws)](https://aws.amazon.com/q/)
@@ -9,7 +9,7 @@
 
 ---
 
-A free, open-licensed music player. 96,338 tracks from the Internet Archive, Jamendo, Freesound, and Wikimedia Commons. No account. No ads. No subscriptions. Install it to your home screen and it works offline.
+A free, open-licensed music player. 106,121 tracks from the Internet Archive, Jamendo, Freesound, and Wikimedia Commons. No account. No ads. No subscriptions. Install it to your home screen and it works offline.
 
 **[→ Open the app](https://shannon-goddard.github.io/music/)**
 
