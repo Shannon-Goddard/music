@@ -291,7 +291,7 @@ function _chip({ label, attr, value }) {
   const display = label === 'Grateful-Dead' ? 'Grateful Dead' : label;
   if (value === 'grateful-dead') {
     return `<button ${attr}="${value}" class="chip flex items-center gap-1.5">
-      <img src="/music/icons/gd-skull.png" width="14" height="14" alt="" style="opacity:0.7" />
+      <img src="/music/icons/gd-skull.png" width="20" height="20" alt="" style="opacity:0.7" />
       ${display}
     </button>`;
   }
@@ -300,7 +300,7 @@ function _chip({ label, attr, value }) {
 
 function _radioChip(genre) {
   const icon = genre === 'Grateful-Dead'
-    ? `<img src="/music/icons/gd-skull.png" width="11" height="11" alt="" style="opacity:0.6" />`
+    ? `<img src="/music/icons/gd-skull.png" width="16" height="16" alt="" style="opacity:0.6" />`
     : `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" class="opacity-60"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
   const display = genre === 'Grateful-Dead' ? 'Grateful Dead' : genre;
   return `
